@@ -1,0 +1,14 @@
+#N canvas 401 176 408 218 10;
+#X obj 63 33 inlet bang;
+#X obj 63 54 t b b;
+#X obj 63 98 min;
+#X obj 63 119 outlet;
+#X obj 113 76 rand_f;
+#X obj 63 76 rand_f;
+#X text 9 5 Générateur aléatoire favorisant les petites valeurs.;
+#X connect 0 0 1 0;
+#X connect 1 0 5 0;
+#X connect 1 1 4 0;
+#X connect 2 0 3 0;
+#X connect 4 0 2 1;
+#X connect 5 0 2 0;

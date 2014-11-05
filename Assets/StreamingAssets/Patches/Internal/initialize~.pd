@@ -1,0 +1,8 @@
+#N canvas 555 549 397 89 10;
+#X obj 25 56 dac~;
+#X obj 25 39 adc~;
+#X obj 66 43 pdplayer~;
+#X text 22 1 This patch is used internally by the PDPlayer. It must
+be included in the StreamingAssets folder.;
+#X connect 1 0 0 0;
+#X connect 1 1 0 1;

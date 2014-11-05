@@ -1,0 +1,10 @@
+#N canvas 1 75 396 327 10;
+#X obj 75 -114 int;
+#X obj 75 -180 inlet;
+#X obj 75 -92 outlet;
+#X obj 75 -136 * \$1;
+#X obj 75 -158 moses 1;
+#X connect 0 0 2 0;
+#X connect 1 0 4 0;
+#X connect 3 0 0 0;
+#X connect 4 0 3 0;

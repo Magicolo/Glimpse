@@ -1,0 +1,7 @@
+fileFormatVersion: 2
+guid: 5e68be79b5d849541ac49749c8c0a78f
+ShaderImporter:
+  defaultTextures:
+  - _node_3: {fileID: 2800000, guid: a314e4832a776064fa40e809293d2523, type: 3}
+  - _node_8: {fileID: 2800000, guid: f6346330eb5a5244ca0b1834fffd4b52, type: 3}
+  userData: 

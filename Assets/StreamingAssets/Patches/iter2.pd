@@ -1,0 +1,27 @@
+#N canvas 548 318 450 300 10;
+#X obj 46 174 list split 1;
+#X obj 46 91 until;
+#X obj 46 129 list append;
+#X obj 72 58 t b l;
+#X obj 176 174 bang;
+#X text 205 34 <- click to test;
+#X text 115 86 "until" bangs its output until told to stop by a "bang"
+to its right inlet.;
+#X text 134 128 Store the remaining list.;
+#X text 211 173 third outlet of "split" tells us to stop.;
+#X text 64 205 Second outlet of "split" becomes the new list for "list
+append" above.;
+#X text 128 58 First store list \, then start the loop;
+#X obj 72 30 inlet;
+#X obj 46 284 outlet;
+#X obj 46 254 unpack f;
+#X connect 0 0 13 0;
+#X connect 0 1 2 1;
+#X connect 0 2 4 0;
+#X connect 1 0 2 0;
+#X connect 2 0 0 0;
+#X connect 3 0 1 0;
+#X connect 3 1 2 1;
+#X connect 4 0 1 1;
+#X connect 11 0 3 0;
+#X connect 13 0 12 0;

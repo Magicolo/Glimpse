@@ -1,0 +1,25 @@
+#N canvas 526 194 427 281 10;
+#X obj 63 33 inlet bang;
+#X obj 63 79 rand_f;
+#X obj 149 33 inlet lambda;
+#X obj 173 55 loadbang;
+#X obj 173 77 f \$1;
+#X obj 63 103 * 2;
+#X obj 63 125 expr if ($f1 > 1 \, 2 - $f1 \, $f1) \; if ($f1 > 1 \,
+-1 \, 1);
+#X floatatom 149 101 5 0 0 0 - - -;
+#X text 9 5 Générateur aléatoire bi-exponentiel.;
+#X obj 63 217 outlet;
+#X obj 63 171 expr $f3 * log($f1) / $f2;
+#X obj 63 193 expr $f1 * 0.5 + 0.5;
+#X connect 0 0 1 0;
+#X connect 1 0 5 0;
+#X connect 2 0 7 0;
+#X connect 3 0 4 0;
+#X connect 4 0 7 0;
+#X connect 5 0 6 0;
+#X connect 6 0 10 0;
+#X connect 6 1 10 2;
+#X connect 7 0 10 1;
+#X connect 10 0 11 0;
+#X connect 11 0 9 0;

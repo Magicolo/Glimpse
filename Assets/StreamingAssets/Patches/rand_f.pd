@@ -1,0 +1,11 @@
+#N canvas 475 280 365 191 10;
+#X obj 61 34 inlet;
+#X msg 61 56 bang;
+#X obj 61 78 random 1e+06;
+#X obj 61 100 / 1e+06;
+#X obj 61 122 outlet;
+#X text 5 3 Générateur aléatoire uniforme entre 0 et 1;
+#X connect 0 0 1 0;
+#X connect 1 0 2 0;
+#X connect 2 0 3 0;
+#X connect 3 0 4 0;

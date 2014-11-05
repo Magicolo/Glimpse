@@ -1,0 +1,136 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+using System.Collections;
+using Magicolo.AudioTools;
+using Magicolo.GeneralTools;
+
+namespace Magicolo.AudioTools {
+	[System.Serializable]
+	public class AudioPlayerItemManager : AudioItemManager {
+		
+		public AudioPlayer audioPlayer;
+		
+		public AudioPlayerItemManager(AudioPlayer audioPlayer)
+			: base(audioPlayer.listener, audioPlayer.infoManager, audioPlayer) {
+			
+			this.audioPlayer = audioPlayer;
+		}
+
+		public virtual AudioItem Play(string soundName, GameObject source, params AudioOption[] audioOptions) {
+			AudioItem audioItem = GetSingleAudioItem(soundName, source);
+			audioItem.Play(audioOptions);
+			return audioItem;
+		}
+
+		public virtual AudioItem PlayContainer(string containerName, GameObject source, params AudioOption[] audioOptions) {
+			AudioItem audioItem = GetAudioItem(audioPlayer.containerManager.GetContainer(containerName), source);
+			audioItem.Play(audioOptions);
+			return audioItem;
+		}
+		
+		public virtual SingleAudioItem GetSingleAudioItem(string soundName, GameObject source) {
+			AudioInfo audioInfo = infoManager.GetAudioInfo(soundName);
+			AudioSource audioSource = GetAudioSource(audioInfo, source);
+			CoroutineHolder coroutineHolder = audioSource.GetOrAddComponent<CoroutineHolder>();
+			GainManager gainManager = audioSource.GetOrAddComponent<GainManager>();
+			
+			idCounter += 1;
+			SingleAudioItem audioItem = new SingleAudioItem(audioInfo.Name, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, audioPlayer);
+			
+			gainManager.Initialize(source, audioItem, audioPlayer);
+			audioItem.Update();
+			inactiveAudioItems.Add(audioItem);
+			
+			return audioItem;
+		}
+		
+		public virtual AudioItem GetAudioItem(AudioContainer container, GameObject source) {
+			MultipleAudioItem multipleAudioItem;
+			
+			idCounter += 1;
+			switch (container.type) {
+				case AudioContainer.Types.RandomContainer:
+					multipleAudioItem = GetRandomAudioItem(container, container.childrenIds, source);
+					break;
+				default:
+					multipleAudioItem = GetMixAudioItem(container, container.childrenIds, source);
+					break;
+			}
+			return multipleAudioItem;
+		}
+		
+		public virtual AudioItem GetAudioItem(AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+			AudioItem audioItem = null;
+			
+			if (subContainer.IsSource) {
+				audioItem = GetSourceAudioItem(container, subContainer, source);
+			}
+			else {
+				audioItem = GetContainerAudioItem(container, subContainer, source);
+			}
+			return audioItem;
+		}
+		
+		public virtual SingleAudioItem GetSourceAudioItem(AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+			SingleAudioItem sourceAudioItem = null;
+			
+			switch (subContainer.type) {
+				default:
+					if (subContainer.audioOptions != null) {
+						sourceAudioItem = GetSingleAudioItem(subContainer.audioOptions.name, source);
+						sourceAudioItem.containerAudioOptions = subContainer.options;
+					}
+					break;
+			}
+			return sourceAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetContainerAudioItem(AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+			MultipleAudioItem multipleAudioItem = null;
+				
+			switch (subContainer.type) {
+				case AudioSubContainer.Types.RandomContainer:
+					multipleAudioItem = GetRandomAudioItem(container, subContainer.childrenIds, source);
+					break;
+				default:
+					multipleAudioItem = GetMixAudioItem(container, subContainer.childrenIds, source);
+					break;
+			}
+			return multipleAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetMixAudioItem(AudioContainer container, List<int> childrenIds, GameObject source) {
+			idCounter += 1;
+			MultipleAudioItem mixAudioItem = new MultipleAudioItem(container.Name, idCounter, this, audioPlayer);
+			
+			foreach (int childrenId in childrenIds) {
+				AudioItem childAudioItem = GetAudioItem(container, container.GetSubContainerWithID(childrenId), source);
+				if (childAudioItem != null) {
+					mixAudioItem.AddAudioItem(childAudioItem);
+				}
+			}
+			return mixAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetRandomAudioItem(AudioContainer container, List<int> childrenIds, GameObject source) {
+			idCounter += 1;
+			MultipleAudioItem randomAudioItem = new MultipleAudioItem(container.Name, idCounter, this, audioPlayer);
+			List<AudioSubContainer> childcontainers = new List<AudioSubContainer>();
+			List<float> weights = new List<float>();
+			
+			for (int i = 0; i < childrenIds.Count; i++) {
+				AudioSubContainer childContainer = container.GetSubContainerWithID(childrenIds[i]);
+				if (childContainer != null) {
+					childcontainers.Add(childContainer);
+					weights.Add(childContainer.weight);
+				}
+			}
+			
+			AudioSubContainer randomChildContainer = HelperFunctions.WeightedRandom(childcontainers, weights);
+			if (randomAudioItem != null) {
+				randomAudioItem.AddAudioItem(GetAudioItem(container, randomChildContainer, source));
+			}
+			return randomAudioItem;
+		}
+	}
+}
