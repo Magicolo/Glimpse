@@ -3,7 +3,7 @@ using System.Collections;
 
 public class UnseenActionsTrigger : MonoBehaviour {
 
-	public void PlayUnseenSound () {
-		AudioPlayer.PlayContainer("Doll_Voice_Whisper", gameObject);
+	public void PlayUnseenSound() {
+		AudioMaster.PlayDollUnseenSound(gameObject);
 	}
 }

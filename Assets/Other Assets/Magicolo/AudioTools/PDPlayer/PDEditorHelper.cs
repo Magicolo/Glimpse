@@ -22,12 +22,10 @@ namespace Magicolo.AudioTools {
 		public override void Update() {
 			base.Update();
 			
-			#if UNITY_EDITOR
 			initializePatchPath = HelperFunctions.GetAssetPath("initialize~.pd").Replace("Assets" + Path.AltDirectorySeparatorChar + "StreamingAssets" + Path.AltDirectorySeparatorChar, "");
-			#endif
 		}
 		
-		public void DrawGizmos() {
+		public virtual void DrawGizmos() {
 			#if UNITY_EDITOR
 			List<PDEditorModule> moduleList = new List<PDEditorModule>(modules);
 			moduleList.Add(defaultModule);
@@ -50,7 +48,7 @@ namespace Magicolo.AudioTools {
 		
 		public override void OnHierarchyWindowItemGUI(int instanceid, Rect selectionrect) {
 			#if UNITY_EDITOR
-			icon = icon ?? HelperFunctions.GetAssetInFolder<Texture>("pd.png", "PDPlayer");
+			icon = icon ?? HelperFunctions.LoadAssetInFolder<Texture>("pd.png", "PDPlayer");
 			GameObject gameObject = UnityEditor.EditorUtility.InstanceIDToObject(instanceid) as GameObject;
 			
 			if (gameObject == null || icon == null) return;
@@ -62,7 +60,7 @@ namespace Magicolo.AudioTools {
 			
 			PDPlayer player = gameObject.GetComponent<PDPlayer>();
 			if (player != null) {
-				selectionrect.x = width - 8 + gameObject.GetHierarchyDepth() * 14;
+				selectionrect.x = width - 22 + gameObject.GetHierarchyDepth() * 14;
 				GUI.DrawTexture(selectionrect, icon);
 			}
 			#endif

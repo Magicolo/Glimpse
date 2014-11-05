@@ -7,10 +7,10 @@ namespace Magicolo.AudioTools {
 	public class PDSingleAudioItem : Magicolo.AudioTools.SingleAudioItem {
 		
 		public PDGainManager pdGainManager;
-		public PDAudioItemManager pdItemManager;
+		public PDItemManager pdItemManager;
 		public PDPlayer pdPlayer;
 		
-		public PDSingleAudioItem(string name, int id, AudioSource audioSource, AudioInfo audioInfo, CoroutineHolder coroutineHolder, PDGainManager pdGainManager, PDAudioItemManager pdItemManager, PDPlayer pdPlayer)
+		public PDSingleAudioItem(string name, int id, AudioSource audioSource, AudioInfo audioInfo, CoroutineHolder coroutineHolder, PDGainManager pdGainManager, PDItemManager pdItemManager, PDPlayer pdPlayer)
 			: base(name, id, audioSource, audioInfo, coroutineHolder, pdGainManager, pdItemManager, pdPlayer) {
 			
 			this.pdPlayer = pdPlayer;

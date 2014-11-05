@@ -1,21 +1,34 @@
-﻿using Magicolo.GeneralTools;
+﻿using System.Collections;
+using Magicolo.GeneralTools;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
 namespace Magicolo.EditorTools {
-	[ExecuteInEditMode]
 	public class CustomEditorBase : Editor {
 	
-		protected bool deleteBreak;
-		protected delegate void AddElementCallback(SerializedProperty addedElement);
-		protected delegate void DeleteElementCallback();
-		protected Event currentEvent;
-		protected Dictionary<string, bool> pressedDict = new Dictionary<string, bool>();
-		protected int selectedIndex;
-		protected Vector2 lastClickPosition;
+		public enum ButtonAlign {
+			None,
+			Left,
+			Right,
+			Center
+		}
+		
+		public delegate void AddCallback(SerializedProperty arrayProperty);
+		public delegate void DeleteCallback(SerializedProperty arrayProperty, int indexToRemove);
+		public delegate void DropCallback<T>(T droppedObject);
+		public delegate void ReorderCallback(SerializedProperty arrayProperty, int sourceIndex, int targetIndex);
+		
+		public Event currentEvent;
+		public bool deleteBreak;
 
-		protected virtual void Begin(bool space = true) {
+		public virtual void OnEnable() {
+		}
+		
+		public virtual void OnDisable() {
+		}
+		
+		public virtual void Begin(bool space = true) {
 			currentEvent = Event.current;
 		
 			if (space) {
@@ -23,11 +36,12 @@ namespace Magicolo.EditorTools {
 			}
 			
 			deleteBreak = false;
+			Undo.RecordObject(target, string.Format("{0} ({1}) modified.", target.name, target.GetType()));
 			EditorGUI.BeginChangeCheck();
 			serializedObject.Update();
 		}
 	
-		protected virtual void End(bool space = true) {
+		public virtual void End(bool space = true) {
 			if (space) {
 				EditorGUILayout.Space();
 			}
@@ -37,45 +51,197 @@ namespace Magicolo.EditorTools {
 				EditorUtility.SetDirty(target);
 			}
 		}
-
-		protected void BeginBox(GUIStyle style) {
-			Rect rect = EditorGUILayout.BeginVertical();
-			rect.width -= EditorGUI.indentLevel * 16 - 1;
-			rect.height += 1;
-			rect.x += EditorGUI.indentLevel * 15 + 1;
-			GUI.Box(rect, "", style);
-		}
-	
-		protected void BeginBox() {
-			BeginBox(new GUIStyle("box"));
-		}
-	
-		protected void EndBox() {
-			EditorGUILayout.EndVertical();
-		}
-	
-		protected bool AddElementFoldOut(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, int overrideArraySize, AddElementCallback addElementCallback = null) {
-			int arraySize = property.arraySize;
-			if (overrideArraySize >= 0) {
-				arraySize = overrideArraySize;
+			
+		#region Buttons
+		public bool Button(GUIContent label, GUIStyle style, ButtonAlign align, bool disableOnPlay, params GUILayoutOption[] options) {
+			if (style == null) {
+				style = new GUIStyle("MiniToolbarButton");
+				style.clipping = TextClipping.Overflow;
+				style.contentOffset = new Vector2(2, 0);
 			}
-			label.text += string.Format(" ({0})", arraySize);
+			
+			EditorGUI.BeginDisabledGroup(Application.isPlaying && disableOnPlay);
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(1);
+			EditorGUILayout.BeginHorizontal();
+			
+			if (align == ButtonAlign.Right || align == ButtonAlign.Center) {
+				EditorGUILayout.Space();
+			}
+			
+			bool pressed = GUILayout.Button(label, style, options);
+			
+			if (align == ButtonAlign.Left || align == ButtonAlign.Center) {
+				EditorGUILayout.Space();
+			}
+			
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.EndVertical();
+			EditorGUI.EndDisabledGroup();
+			
+			return pressed;
+		}
 		
+		public bool Button(GUIContent label, ButtonAlign align, bool disableOnPlay, params GUILayoutOption[] options) {
+			return Button(label, null, align, disableOnPlay, options);
+		}
+		
+		public bool Button(GUIContent label, GUIStyle style, bool disableOnPlay, params GUILayoutOption[] options) {
+			return Button(label, style, ButtonAlign.None, disableOnPlay, options);
+		}
+		
+		public bool Button(GUIContent label, bool disableOnPlay, params GUILayoutOption[] options) {
+			return Button(label, null, ButtonAlign.None, disableOnPlay, options);
+		}
+		
+		public bool Button(GUIContent label, params GUILayoutOption[] options) {
+			return Button(label, null, ButtonAlign.None, false, options);
+		}
+
+		public bool LargeButton(GUIContent label, bool disableOnPlay, params GUILayoutOption[] options) {
+			bool pressed = false;
+			
+			GUIStyle style = new GUIStyle("toolbarButton");
+			style.fontStyle = FontStyle.Bold;
+			style.fontSize = 10;
+			style.clipping = TextClipping.Overflow;
+			style.contentOffset = new Vector2(2, 0);
+			
+			pressed = Button(label, style, disableOnPlay, options);
+			GUILayout.Space(2);
+			
+			return pressed;
+		}
+		
+		public bool LargeAddButton(SerializedProperty property, GUIContent label, AddCallback addCallback, params GUILayoutOption[] options) {
+			bool pressed = false;
+			if (LargeButton(label, true, options)) {
+				AddToArray(property, addCallback);
+				pressed = true;
+			}
+			return pressed;
+		}
+	
+		public bool LargeAddButton(SerializedProperty property, GUIContent label, params GUILayoutOption[] options) {
+			return LargeAddButton(property, label, null, options);
+		}
+
+		public bool AddButton() {
+			GUIStyle style = new GUIStyle("toolbarbutton");
+			style.clipping = TextClipping.Overflow;
+			style.contentOffset = new Vector2(0, -1);
+			style.fontSize = 10;
+			
+			bool pressed = Button("+".ToGUIContent(), style, ButtonAlign.Right, true, GUILayout.Width(16));
+			
+			return pressed;
+		}
+		
+		public bool AddButton(SerializedProperty property, AddCallback addCallback = null) {
+			bool pressed = false;
+			if (AddButton()) {
+				AddToArray(property, addCallback);
+				pressed = true;
+			}
+			return pressed;
+		}
+		
+		public bool DeleteButton() {
+			GUIStyle style = new GUIStyle("MiniToolbarButtonLeft");
+			style.clipping = TextClipping.Overflow;
+			
+			bool pressed = Button("−".ToGUIContent(), style, ButtonAlign.Right, true, GUILayout.Width(16));
+			
+			return pressed;
+		}
+		
+		public bool DeleteButton(SerializedProperty property, int indexToRemove, DeleteCallback deleteCallback = null) {
+			bool pressed = false;
+			if (DeleteButton()) {
+				DeleteFromArray(property, indexToRemove, deleteCallback);
+				pressed = true;
+			}
+			return pressed;
+		}
+		#endregion
+		
+		#region Foldouts
+		public void Foldout(SerializedProperty property, GUIContent label, GUIStyle style) {
+			style = style ?? EditorStyles.foldout;
+			
+			EditorGUILayout.BeginHorizontal();
+			property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, label, style);
+			EditorGUILayout.Space();
+			EditorGUILayout.EndHorizontal();
+		}
+		
+		public void Foldout(SerializedProperty property, GUIContent label) {
+			Foldout(property, label, null);
+		}
+		
+		public void Foldout(IShowable showable, GUIContent label, GUIStyle style) {
+			style = style ?? EditorStyles.foldout;
+			
+			EditorGUILayout.BeginHorizontal();
+			showable.Showing = EditorGUILayout.Foldout(showable.Showing, label, style);
+			EditorGUILayout.Space();
+			EditorGUILayout.EndHorizontal();
+		}
+		
+		public void Foldout(IShowable showable, GUIContent label) {
+			Foldout(showable, label, null);
+		}
+		
+		public void DropFoldout<T>(SerializedProperty property, GUIContent label, GUIStyle style, bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
+			Rect dropArea = EditorGUILayout.BeginHorizontal();
+			Foldout(property, label, style);
+			EditorGUILayout.EndHorizontal();
+			
+			DropArea<T>(dropArea, disableOnPlay, dropCallback);
+		}
+		
+		public void DropFoldout<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
+			DropFoldout<T>(property, label, null, disableOnPlay, dropCallback);
+		}
+		
+		public void DropFoldout<T>(SerializedProperty property, GUIContent label, DropCallback<T> dropCallback) where T : Object {
+			DropFoldout<T>(property, label, null, false, dropCallback);
+		}
+		
+		public void DropFoldout<T>(IShowable showable, GUIContent label, GUIStyle style, bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
+			Rect dropArea = EditorGUILayout.BeginHorizontal();
+			Foldout(showable, label, style);
+			EditorGUILayout.EndHorizontal();
+			
+			DropArea<T>(dropArea, disableOnPlay, dropCallback);
+		}
+		
+		public void DropFoldout<T>(IShowable showable, GUIContent label, bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
+			DropFoldout<T>(showable, label, null, disableOnPlay, dropCallback);
+		}
+		
+		public void DropFoldout<T>(IShowable showable, GUIContent label, DropCallback<T> dropCallback) where T : Object {
+			DropFoldout<T>(showable, label, null, false, dropCallback);
+		}
+		
+		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, int overrideArraySize, AddCallback addCallback = null) {
+			label.text += string.Format(" ({0})", GetArraySize(property, overrideArraySize));
+			
 			EditorGUILayout.BeginHorizontal();
 		
-			if (showable.Showing && arraySize == 0) {
+			if (showable.Showing && GetArraySize(property, overrideArraySize) == 0) {
 				showable.Showing = false;
 			}
 		
-			showable.Showing = EditorGUILayout.Foldout(showable.Showing, label, style);
+			Foldout(showable, label, style);
 		
 			bool pressed = false;
-			if (showable.Showing && arraySize == 0 && !Application.isPlaying) {
-				AddElement(property, addElementCallback);
+			if (showable.Showing && GetArraySize(property, overrideArraySize) == 0 && !Application.isPlaying) {
+				AddToArray(property, addCallback);
 				pressed = true;
 			}
 		
-			if (AddElementButton(property, addElementCallback)) {
+			if (AddButton(property, addCallback)) {
 				pressed = true;
 			}
 		
@@ -83,40 +249,36 @@ namespace Magicolo.EditorTools {
 			return pressed;
 		}
 	
-		protected bool AddElementFoldOut(SerializedProperty property, IShowable showable, GUIContent label, int overrideArraySize, AddElementCallback addElementCallback = null) {
-			return AddElementFoldOut(property, showable, label, EditorStyles.foldout, overrideArraySize, addElementCallback);
+		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, int overrideArraySize, AddCallback addCallback = null) {
+			return AddFoldOut(property, showable, label, null, overrideArraySize, addCallback);
 		}
 	
-		protected bool AddElementFoldOut(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, AddElementCallback addElementCallback = null) {
-			return AddElementFoldOut(property, showable, label, style, -1, addElementCallback);
+		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, AddCallback addCallback = null) {
+			return AddFoldOut(property, showable, label, style, -1, addCallback);
 		}
 	
-		protected bool AddElementFoldOut(SerializedProperty property, IShowable showable, GUIContent label, AddElementCallback addElementCallback = null) {
-			return AddElementFoldOut(property, showable, label, EditorStyles.foldout, -1, addElementCallback);
+		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, AddCallback addCallback = null) {
+			return AddFoldOut(property, showable, label, null, -1, addCallback);
 		}
 		
-		protected bool AddElementFoldOut(SerializedProperty property, GUIContent label, GUIStyle style, int overrideArraySize, AddElementCallback addElementCallback = null) {
-			int arraySize = property.arraySize;
-			if (overrideArraySize >= 0) {
-				arraySize = overrideArraySize;
-			}
-			label.text += string.Format(" ({0})", arraySize);
+		public bool AddFoldOut(SerializedProperty property, GUIContent label, GUIStyle style, int overrideArraySize, AddCallback addCallback = null) {
+			label.text += string.Format(" ({0})", GetArraySize(property, overrideArraySize));
 		
 			EditorGUILayout.BeginHorizontal();
 		
-			if (property.isExpanded && arraySize == 0) {
+			if (property.isExpanded && GetArraySize(property, overrideArraySize) == 0) {
 				property.isExpanded = false;
 			}
-		
-			property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, label, style);
+			
+			Foldout(property, label, style);
 		
 			bool pressed = false;
-			if (property.isExpanded && arraySize == 0 && !Application.isPlaying) {
-				AddElement(property, addElementCallback);
+			if (property.isExpanded && GetArraySize(property, overrideArraySize) == 0 && !Application.isPlaying) {
+				AddToArray(property, addCallback);
 				pressed = true;
 			}
 		
-			if (AddElementButton(property, addElementCallback)) {
+			if (AddButton(property, addCallback)) {
 				pressed = true;
 			}
 		
@@ -124,247 +286,301 @@ namespace Magicolo.EditorTools {
 			return pressed;
 		}
 	
-		protected bool AddElementFoldOut(SerializedProperty property, GUIContent label, int overrideArraySize, AddElementCallback addElementCallback = null) {
-			return AddElementFoldOut(property, label, EditorStyles.foldout, overrideArraySize, addElementCallback);
+		public bool AddFoldOut(SerializedProperty property, GUIContent label, int overrideArraySize, AddCallback addCallback = null) {
+			return AddFoldOut(property, label, null, overrideArraySize, addCallback);
 		}
 	
-		protected bool AddElementFoldOut(SerializedProperty property, GUIContent label, GUIStyle style, AddElementCallback addElementCallback = null) {
-			return AddElementFoldOut(property, label, style, -1, addElementCallback);
+		public bool AddFoldOut(SerializedProperty property, GUIContent label, GUIStyle style, AddCallback addCallback = null) {
+			return AddFoldOut(property, label, style, -1, addCallback);
 		}
 	
-		protected bool AddElementFoldOut(SerializedProperty property, GUIContent label, AddElementCallback addElementCallback = null) {
-			return AddElementFoldOut(property, label, EditorStyles.foldout, -1, addElementCallback);
+		public bool AddFoldOut(SerializedProperty property, GUIContent label, AddCallback addCallback = null) {
+			return AddFoldOut(property, label, null, -1, addCallback);
 		}
-		
-		protected bool LargeAddElementButton(SerializedProperty property, GUIContent label, AddElementCallback addElementCallback = null) {
-			bool pressed = false;
-			if (LargeButton(label)) {
-				AddElement(property, addElementCallback);
-				pressed = true;
-			}
-			return pressed;
-		}
-	
-		protected bool LargeButton(GUIContent label) {
-			bool pressed = false;
-			GUILayout.BeginHorizontal();
-			EditorGUI.BeginDisabledGroup(Application.isPlaying);
-			GUILayout.Space(EditorGUI.indentLevel * 16);
-			GUIStyle style = new GUIStyle("MiniToolbarButton");
-			if (GUILayout.Button(label, style)) {
-				pressed = true;
-			}
-			EditorGUI.EndDisabledGroup();
-			GUILayout.EndHorizontal();
-			return pressed;
-		}
-	
-		protected bool AddElementButton() {
-			bool pressed = false;
-			EditorGUI.BeginDisabledGroup(Application.isPlaying);
-			GUIStyle style = new GUIStyle("toolbarbutton");
-			style.clipping = TextClipping.Overflow;
-			style.fontSize = 10;
-			if (GUILayout.Button("+", style, GUILayout.Width(16))) {
-				pressed = true;
-			}
-			EditorGUI.EndDisabledGroup();
-			return pressed;
-		}
-	
-		protected bool AddElementButton(SerializedProperty property, AddElementCallback addElementCallback = null) {
-			bool pressed = false;
-			if (AddElementButton()) {
-				AddElement(property, addElementCallback);
-				pressed = true;
-			}
-			return pressed;
-		}
-	
-		protected bool DeleteElementFoldOutWithArrows(SerializedProperty property, int index, GUIContent label, GUIStyle style, DeleteElementCallback deleteElementCallback = null) {
-			EditorGUILayout.BeginHorizontal();
-		
-			SerializedProperty elementProperty = property.GetArrayElementAtIndex(index);
-			elementProperty.isExpanded = EditorGUILayout.Foldout(elementProperty.isExpanded, label, style);
-			bool pressed = DeleteElementButtonWithArrows(property, index, deleteElementCallback);
-		
-			EditorGUILayout.EndHorizontal();
-			return pressed;
-		}
-	
-		protected bool DeleteElementFoldOutWithArrows(SerializedProperty property, int index, GUIContent label, DeleteElementCallback deleteElementCallback = null) {
-			return DeleteElementFoldOutWithArrows(property, index, label, EditorStyles.foldout, deleteElementCallback);
-		}
-	
-		protected bool DeleteElementFoldOut(SerializedProperty property, int index, GUIContent label, GUIStyle style, DeleteElementCallback deleteElementCallback = null) {
-			EditorGUILayout.BeginHorizontal();
-		
-			SerializedProperty elementProperty = property.GetArrayElementAtIndex(index);
-			elementProperty.isExpanded = EditorGUILayout.Foldout(elementProperty.isExpanded, label, style);
-			bool pressed = DeleteElementButton(property, index, deleteElementCallback);
-		
-			EditorGUILayout.EndHorizontal();
-		
-			return pressed;
-		}
-	
-		protected bool DeleteElementFoldOut(SerializedProperty property, int index, GUIContent label, DeleteElementCallback deleteElementCallback = null) {
-			return DeleteElementFoldOut(property, index, new GUIContent(label), EditorStyles.foldout, deleteElementCallback);
-		}
-	
-		protected bool DeleteElementButton() {
-			bool pressed = false;
-		
-			EditorGUI.BeginDisabledGroup(Application.isPlaying);
-			GUIStyle style = new GUIStyle("MiniToolbarButtonLeft");
-			style.clipping = TextClipping.Overflow;
-			if (GUILayout.Button("−", style, GUILayout.Width(16))) {
-				pressed = true;
-			}
-			EditorGUI.EndDisabledGroup();
-			return pressed;
-		}
-	
-		protected bool DeleteElementButton(SerializedProperty property, int indexToRemove, DeleteElementCallback deleteElementCallback = null) {
-			bool pressed = false;
-			if (DeleteElementButton()) {
-				DeleteElement(property, indexToRemove, deleteElementCallback);
-				pressed = true;
-			}
-			return pressed;
-		}
-	
-		protected bool DeleteElementButtonWithArrows(SerializedProperty property, int indexToRemove, DeleteElementCallback deleteElementCallback = null) {
-			bool pressed = false;
-			EditorGUILayout.BeginHorizontal();
-			MoveElementArrows(property, indexToRemove);
-			pressed = DeleteElementButton(property, indexToRemove, deleteElementCallback);
-			EditorGUILayout.EndHorizontal();
-			return pressed;
-		}
-	
-		protected void MoveElementArrows(SerializedProperty property, int indexToMove) {
-			EditorGUILayout.Space();
-			if (property.arraySize <= 1) return;
-		
-			pressedDict = pressedDict ?? new Dictionary<string, bool>();
-			string upArrowName = "UpArrow" + property.name + property.depth + indexToMove;
-			string downArrowName = "DownArrow" + property.name + property.depth + indexToMove;
 
-			EditorGUI.BeginDisabledGroup(Application.isPlaying);
+		public bool AddFoldOut<T>(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			Rect dropArea = EditorGUILayout.BeginHorizontal();
+			bool pressed = AddFoldOut(property, showable, label, style, overrideArraySize, addCallback);
+			EditorGUILayout.EndHorizontal();
+			
+			DropArea<T>(dropArea, true, dropCallback);
+
+			return pressed;
+		}
 		
-			GUIStyle referenceStyle = new GUIStyle("boldLabel");
-			GUIStyle upArrowStyle = new GUIStyle("boldLabel");
-			upArrowStyle.fontSize = 9;
-			upArrowStyle.alignment = TextAnchor.MiddleCenter;
-			if (pressedDict.ContainsKey(upArrowName)) {
-				if (pressedDict[upArrowName]) upArrowStyle.normal.textColor = Color.gray;
-			}
-			else pressedDict[upArrowName] = false;
+		public bool AddFoldOut<T>(SerializedProperty property, IShowable showable, GUIContent label, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(property, showable, label, null, overrideArraySize, dropCallback, addCallback);
+		}
 		
-			GUIStyle downArrowStyle = new GUIStyle("boldLabel");
-			downArrowStyle.fontSize = 9;
-			downArrowStyle.alignment = TextAnchor.MiddleCenter;
-			if (pressedDict.ContainsKey(downArrowName)) {
-				if (pressedDict[downArrowName]) downArrowStyle.normal.textColor = Color.gray;
-			}
-			else pressedDict[downArrowName] = false;
+		public bool AddFoldOut<T>(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(property, showable, label, style, -1, dropCallback, addCallback);
+		}
 		
-			bool isInsideRect;
-			Rect position;
-			Event e = Event.current;
-			position = EditorGUILayout.BeginHorizontal();
-			position.x += position.width - 16;
-			position.y += 1;
-			position.height = 8;
-			position.width = 14;
-			isInsideRect = e.mousePosition.Intersects(new Rect(position.x, position.y, position.width, position.height - 1));
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, IShowable showable, GUIContent label, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(arrayProperty, showable, label, null, -1, dropCallback, addCallback);
+		}
 		
-			if (e.isMouse) {
-				if (e.button == 0) {
-					if (e.type == EventType.MouseDown) {
-						if (isInsideRect) {
-							upArrowStyle.normal.textColor = Color.gray;
-							pressedDict[upArrowName] = true;
-						}
-						else {
-							upArrowStyle.normal.textColor = referenceStyle.normal.textColor;
-							pressedDict[upArrowName] = false;
-						}
-					}
-					else if (e.type == EventType.MouseUp) {
-						upArrowStyle.normal.textColor = referenceStyle.normal.textColor;
-						pressedDict[upArrowName] = false;
-					}
-				}
-			}
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, GUIContent label, GUIStyle style, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			Rect dropArea = EditorGUILayout.BeginVertical();
+			bool pressed = AddFoldOut(arrayProperty, label, style, overrideArraySize, addCallback);
+			EditorGUILayout.EndVertical();
+			
+			DropArea<T>(dropArea, true, dropCallback);
+
+			return pressed;
+		}
+				
+		public bool AddFoldOut<T>(SerializedProperty property, GUIContent label, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(property, label, null, overrideArraySize, dropCallback, addCallback);
+		}
 		
-			if (GUI.Button(position, "▲", upArrowStyle)) {
-				upArrowStyle.normal.textColor = referenceStyle.normal.textColor;
-				pressedDict[upArrowName] = false;
-				property.MoveArrayElement(indexToMove, Mathf.Clamp(indexToMove - 1, 0, property.arraySize - 1));
-			}
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, GUIContent label, GUIStyle style, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(arrayProperty, label, style, -1, dropCallback, addCallback);
+		}
 		
-			position.y += 7;
-			isInsideRect = e.mousePosition.Intersects(new Rect(position.x, position.y, position.width, position.height - 1));
-			if (e.isMouse) {
-				if (e.button == 0) {
-					if (e.type == EventType.MouseDown) {
-						if (isInsideRect) {
-							downArrowStyle.normal.textColor = Color.gray;
-							pressedDict[downArrowName] = true;
-						}
-						else {
-							downArrowStyle.normal.textColor = referenceStyle.normal.textColor;
-							pressedDict[downArrowName] = false;
-						}
-					}
-					else if (e.type == EventType.MouseUp) {
-						downArrowStyle.normal.textColor = referenceStyle.normal.textColor;
-						pressedDict[downArrowName] = false;
-					}
-				}
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, GUIContent label, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(arrayProperty, label, null, -1, dropCallback, addCallback);
+		}
+		
+		public bool DeleteFoldOut(SerializedProperty arrayProperty, int index, GUIContent label, GUIStyle style, ReorderCallback reorderCallback, DeleteCallback deleteCallback = null) {
+			EditorGUILayout.BeginHorizontal();
+		
+			SerializedProperty elementProperty = arrayProperty.GetArrayElementAtIndex(index);
+			Foldout(elementProperty, label, style);
+			bool pressed = DeleteButton(arrayProperty, index, deleteCallback);
+		
+			EditorGUILayout.EndHorizontal();
+			
+			if (!pressed) {
+				Reorderable(arrayProperty, index, reorderCallback);
 			}
 		
-			if (GUI.Button(position, "▼", downArrowStyle)) {
-				downArrowStyle.normal.textColor = referenceStyle.normal.textColor;
-				pressedDict[downArrowName] = false;
-				property.MoveArrayElement(indexToMove, Mathf.Clamp(indexToMove + 1, 0, property.arraySize - 1));
+			return pressed;
+		}
+		
+		public bool DeleteFoldOut(SerializedProperty arrayProperty, int index, GUIContent label, GUIStyle style, DeleteCallback deleteCallback = null) {
+			return DeleteFoldOut(arrayProperty, index, label, style, null, deleteCallback);
+		}
+	
+		public bool DeleteFoldOut(SerializedProperty arrayProperty, int index, GUIContent label, ReorderCallback reorderCallback, DeleteCallback deleteCallback = null) {
+			return DeleteFoldOut(arrayProperty, index, label, null, reorderCallback, deleteCallback);
+		}
+	
+		public bool DeleteFoldOut(SerializedProperty arrayProperty, int index, GUIContent label, DeleteCallback deleteCallback = null) {
+			return DeleteFoldOut(arrayProperty, index, label, null, null, deleteCallback);
+		}
+	
+		public bool DeleteFoldOut<T>(SerializedProperty arrayProperty, int index, GUIContent label, GUIStyle style, DropCallback<T> dropCallback, ReorderCallback reorderCallback, DeleteCallback deleteCallback = null) where T : Object {
+			Rect dropArea = EditorGUILayout.BeginHorizontal();
+			bool pressed = DeleteFoldOut(arrayProperty, index, label, style, reorderCallback, deleteCallback);
+			EditorGUILayout.EndHorizontal();
+			
+			DropArea<T>(dropArea, true, dropCallback);
+			
+			return pressed;
+		}
+		
+		public bool DeleteFoldOut<T>(SerializedProperty arrayProperty, int index, GUIContent label, GUIStyle style, DropCallback<T> dropCallback, DeleteCallback deleteCallback = null) where T : Object {
+			return DeleteFoldOut<T>(arrayProperty, index, label, style, dropCallback, null, deleteCallback);
+		}
+			
+		public bool DeleteFoldOut<T>(SerializedProperty arrayProperty, int index, GUIContent label, DropCallback<T> dropCallback, ReorderCallback reorderCallback, DeleteCallback deleteCallback = null) where T : Object {
+			return DeleteFoldOut<T>(arrayProperty, index, label, null, dropCallback, reorderCallback, deleteCallback);
+		}
+			
+		public bool DeleteFoldOut<T>(SerializedProperty arrayProperty, int index, GUIContent label, DropCallback<T> dropCallback, DeleteCallback deleteCallback = null) where T : Object {
+			return DeleteFoldOut<T>(arrayProperty, index, label, null, dropCallback, null, deleteCallback);
+		}
+		#endregion
+
+		#region Miscellaneous
+		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, bool allowSceneObjects, params GUILayoutOption[] options) where T : Object {
+			EditorGUI.BeginDisabledGroup(Application.isPlaying && disableOnPlay);
+			EditorGUILayout.BeginHorizontal();
+			
+			EditorGUI.BeginChangeCheck();
+			property.objectReferenceValue = EditorGUILayout.ObjectField(label, property.objectReferenceValue, typeof(T), allowSceneObjects, options);
+			if (EditorGUI.EndChangeCheck()) {
+				property.serializedObject.ApplyModifiedProperties();
 			}
+			
 			EditorGUILayout.EndHorizontal();
 			EditorGUI.EndDisabledGroup();
 		}
 	
-		protected SerializedProperty AddElement(SerializedProperty property, AddElementCallback addElementCallback = null) {
-			property.arraySize += 1;
-			property.serializedObject.ApplyModifiedProperties();
-			EditorUtility.SetDirty(property.serializedObject.targetObject);
-		
-			SerializedProperty newProperty = property.GetArrayElementAtIndex(property.arraySize - 1);
-			if (addElementCallback != null) {
-				addElementCallback(newProperty);
+		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, params GUILayoutOption[] options) where T : Object {
+			PropertyObjectField<T>(property, label, disableOnPlay, true, options);
+		}
+	
+		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, params GUILayoutOption[] options) where T : Object {
+			PropertyObjectField<T>(property, label, false, true, options);
+		}
+	
+		public void MinMaxSlider(SerializedProperty minProperty, SerializedProperty maxProperty, float min, float max, bool disableOnPlay) {
+			int indent = EditorGUI.indentLevel;
+			EditorGUI.indentLevel = 0;
+			
+			float minValue = 0;
+			if (minProperty.propertyType == SerializedPropertyType.Integer) {
+				minValue = (int)minProperty.GetValue();
 			}
-		
-			return newProperty;
+			else if (minProperty.propertyType == SerializedPropertyType.Float) {
+				minValue = (float)minProperty.GetValue();
+			}
+			
+			float maxValue = 0;
+			if (maxProperty.propertyType == SerializedPropertyType.Integer) {
+				maxValue = (int)maxProperty.GetValue();
+			}
+			else if (maxProperty.propertyType == SerializedPropertyType.Float) {
+				maxValue = (float)maxProperty.GetValue();
+			}
+			
+			EditorGUI.BeginDisabledGroup(Application.isPlaying && disableOnPlay);
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("", GUILayout.Width(indent * 15));
+			
+			minValue = EditorGUILayout.FloatField(minValue, GUILayout.MaxWidth((Screen.width - EditorGUI.indentLevel * 15) * 0.125F));
+			EditorGUILayout.MinMaxSlider(ref minValue, ref maxValue, min, max);
+			maxValue = EditorGUILayout.FloatField(maxValue, GUILayout.MaxWidth((Screen.width - EditorGUI.indentLevel * 15) * 0.125F));
+			
+			EditorGUILayout.EndHorizontal();
+			EditorGUI.EndDisabledGroup();
+			
+			minValue = Mathf.Clamp(minValue, min, maxValue);
+			maxValue = Mathf.Clamp(maxValue, minValue, max);
+			
+			if (minProperty.propertyType == SerializedPropertyType.Integer) {
+				minProperty.SetValue((int)minValue);
+			}
+			else if (minProperty.propertyType == SerializedPropertyType.Float) {
+				minProperty.SetValue(minValue);
+			}
+			
+			if (maxProperty.propertyType == SerializedPropertyType.Integer) {
+				maxProperty.SetValue((int)maxValue);
+			}
+			else if (maxProperty.propertyType == SerializedPropertyType.Float) {
+				maxProperty.SetValue(maxValue);
+			}
+			
+			EditorGUI.indentLevel = indent;
 		}
-	
-		protected void DeleteElement(SerializedProperty property, int indexToRemove, DeleteElementCallback deleteElementCallback = null) {
-			property.DeleteArrayElementAtIndex(indexToRemove);
-			property.serializedObject.ApplyModifiedProperties();
-			EditorUtility.SetDirty(property.serializedObject.targetObject);
-			deleteBreak = true;
 		
-			if (deleteElementCallback != null) {
-				deleteElementCallback();
+		public void MinMaxSlider(SerializedProperty minProperty, SerializedProperty maxProperty, float min, float max) {
+			MinMaxSlider(minProperty, maxProperty, min, max, false);
+		}
+		
+		public void DropArea<T>(Rect dropArea, bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
+			if (Application.isPlaying && disableOnPlay) {
+				return;
+			}
+			
+			if (dropArea.Contains(currentEvent.mousePosition)) {
+				if (DragAndDrop.objectReferences != null && DragAndDrop.objectReferences.Length > 0) {
+					GameObject gameObject = DragAndDrop.objectReferences[0] as GameObject;
+					T dropTarget = DragAndDrop.objectReferences[0] as T ?? gameObject == null ? default(T) : gameObject.GetComponent(typeof(T)) as T;
+					
+					if (dropTarget != null) {
+						DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+					}
+				}
+				
+				if (currentEvent.type == EventType.DragPerform) {
+					DragAndDrop.AcceptDrag();
+						
+					foreach (Object droppedElement in DragAndDrop.objectReferences) {
+						GameObject gameObject = droppedElement as GameObject;
+						T dropTarget = DragAndDrop.objectReferences[0] as T ?? gameObject == null ? default(T) : gameObject.GetComponent(typeof(T)) as T;
+						if (dropTarget != null) {
+							dropCallback(dropTarget);
+						}
+					}
+					currentEvent.Use();
+				}
 			}
 		}
-	
-		protected void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool allowSceneObjects = true, params GUILayoutOption[] options) {
-			label = label ?? GUIContent.none;
-			property.objectReferenceValue = EditorGUILayout.ObjectField(label, property.objectReferenceValue, typeof(T), allowSceneObjects, options);
+		
+		public void DropArea<T>(Rect dropArea, DropCallback<T> dropCallback) where T : Object {
+			DropArea<T>(dropArea, false, dropCallback);
 		}
-	
-		protected void Separator(bool reserveVerticalSpace = true) {
+
+		public void Reorderable(SerializedProperty arrayProperty, int index, Rect dragArea, ReorderCallback reorderCallback = null) {
+			string arrayIdentifier = arrayProperty.name + arrayProperty.arraySize + arrayProperty.depth + arrayProperty.propertyPath + arrayProperty.propertyType;
+			SerializedProperty selectedArray = DragAndDrop.GetGenericData(arrayIdentifier) as SerializedProperty;
+			int selectedIndex = DragAndDrop.GetGenericData("Selected Index") == null ? -1 : (int)DragAndDrop.GetGenericData("Selected Index");
+			int targetIndex = DragAndDrop.GetGenericData("Target Index") == null ? -1 : (int)DragAndDrop.GetGenericData("Target Index");
+			GUIStyle selectedStyle = new GUIStyle("TL SelectionButton PreDropGlow");
+			GUIStyle targetStyle = new GUIStyle("ColorPickerBox");
+			
+			switch (currentEvent.type) {
+				case EventType.MouseDown:
+					if (dragArea.Contains(currentEvent.mousePosition)) {
+						DragAndDrop.PrepareStartDrag();
+						DragAndDrop.SetGenericData(arrayIdentifier, arrayProperty);
+						DragAndDrop.SetGenericData("Selected Index", index);
+						DragAndDrop.objectReferences = new Object[1];
+						currentEvent.Use();
+					}
+					break;
+				case EventType.MouseDrag:
+					if (selectedArray != null && selectedIndex == index) {
+						DragAndDrop.StartDrag(string.Format("Dragging array element {0} at index {1}.", arrayProperty.name, index));
+						currentEvent.Use();
+					}
+					break;
+				case EventType.MouseUp:
+					if (selectedArray != null && selectedIndex == index) {
+						DragAndDrop.PrepareStartDrag();
+						currentEvent.Use();
+					}
+					break;
+				case EventType.DragUpdated:
+					if (selectedArray != null) {
+						if (selectedIndex == index) {
+							GUI.Label(dragArea, GUIContent.none, selectedStyle);
+						}
+						else if (selectedIndex != -1 && dragArea.Contains(currentEvent.mousePosition)) {
+							DragAndDrop.visualMode = DragAndDropVisualMode.Move;
+							DragAndDrop.SetGenericData("Target Index", index);
+							GUI.Label(dragArea, GUIContent.none, targetStyle);
+							currentEvent.Use();
+						}
+					}
+					break;
+				case EventType.DragPerform:
+					if (selectedArray != null && selectedIndex != -1 && dragArea.Contains(currentEvent.mousePosition)) {
+						DragAndDrop.AcceptDrag();
+						ReorderArray(arrayProperty, selectedIndex, targetIndex, reorderCallback);
+						currentEvent.Use();
+					}
+					break;
+				case EventType.DragExited:
+					if (selectedArray != null && selectedIndex == index) {
+						DragAndDrop.PrepareStartDrag();
+						currentEvent.Use();
+					}
+					break;
+				case EventType.Repaint:
+					if (selectedArray != null) {
+						if (selectedIndex == index) {
+							GUI.Label(dragArea, GUIContent.none, selectedStyle);
+						}
+						else if (selectedIndex != -1 && dragArea.Contains(currentEvent.mousePosition)) {
+							DragAndDrop.visualMode = DragAndDropVisualMode.Move;
+							DragAndDrop.SetGenericData("Target Index", index);
+							GUI.Label(dragArea, GUIContent.none, targetStyle);
+						}
+					}
+					break;
+			}
+		}
+		
+		public void Reorderable(SerializedProperty arrayProperty, int index, ReorderCallback reorderCallback = null) {
+			Reorderable(arrayProperty, index, EditorGUI.IndentedRect(GUILayoutUtility.GetLastRect()), reorderCallback);
+		}
+
+		public void Separator(bool reserveVerticalSpace = true) {
 			if (reserveVerticalSpace) {
 				GUILayout.Space(4);
 				EditorGUILayout.LabelField(GUIContent.none, new GUIStyle("RL DragHandle"), GUILayout.Height(4));
@@ -377,86 +593,67 @@ namespace Magicolo.EditorTools {
 				EditorGUILayout.EndVertical();
 			}
 		}
+		#endregion
+		
+		#region Utility
+		public void BeginBox(GUIStyle style) {
+			Rect rect = EditorGUILayout.BeginVertical();
+			rect.width -= EditorGUI.indentLevel * 15 - 1;
+			rect.height += 1;
+			rect.x += EditorGUI.indentLevel * 15 + 1;
+			
+			GUI.Box(rect, "", style);
+		}
+	
+		public void BeginBox() {
+			BeginBox(new GUIStyle("box"));
+		}
+	
+		public void EndBox() {
+			EditorGUILayout.EndVertical();
+		}
 
-		//	bool Reorderable(SerializedProperty property, int index, bool showing, GUIContent label) {
-		//		pressedDict = pressedDict ?? new Dictionary<string, bool>();
-		//		showingDict = showingDict ?? new Dictionary<string, bool>();
-		//		string name = "Reorderable" + property.name + property.depth;
-		//		bool isInsideRect;
-		//		Rect position = EditorGUILayout.BeginHorizontal();
-		//		EditorGUILayout.EndHorizontal();
-		//		position.width = label.text.GetWidth(EditorStyles.standardFont) + 10;
-		//		position.height = 17;
-		//		isInsideRect = currentEvent.mousePosition.Intersects(position);
-		//
-		//		if (currentEvent.isMouse) {
-		//			if (currentEvent.button == 0) {
-		//				if (currentEvent.type == EventType.MouseDown) {
-		//					if (isInsideRect) {
-		//						selectedIndex = index;
-		//						pressedDict[name + index] = true;
-		//						showingDict[name + index] = showing;
-		//						showing = false;
-		//						lastClickPosition = currentEvent.mousePosition;
-		//					}
-		//				}
-		//				else if (currentEvent.type == EventType.MouseUp) {
-		//					pressedDict.Clear();
-		//				}
-		//			}
-		//		}
-		//
-		//		if (selectedIndex == -1) {
-		//			if (!pressedDict.ContainsKey(name + index))
-		//				pressedDict[name + index] = false;
-		//			showingDict[name + index] = showing;
-		//		}
-		//		else {
-		//			if (pressedDict.Count == 0) {
-		//				if (showingDict.ContainsKey(name + index)) {
-		//					showing = showingDict[name + index];
-		//					showingDict.Remove(name + index);
-		//				}
-		//				if (showingDict.Count == 0) {
-		//					selectedIndex = -1;
-		//				}
-		//			}
-		//			else if (pressedDict.ContainsValue(true)) {
-		//				if (index != selectedIndex)
-		//					showing = false;
-		//			}
-		//		}
-		//
-		//		if (pressedDict.ContainsKey(name + index) && pressedDict[name + index]) {
-		//			position.x -= 6;
-		//			position.y += 6;
-		//			position.width += 3;
-		//			GUI.Label(position, "", new GUIStyle("ColorPickerVertThumb"));
-		//			position.x += 1;
-		//			GUI.Label(position, "", new GUIStyle("ColorPickerVertThumb"));
-		//			position.x += 1;
-		//			GUI.Label(position, "", new GUIStyle("ColorPickerVertThumb"));
-		//			position.x += 1;
-		//			GUI.Label(position, "", new GUIStyle("ColorPickerVertThumb"));
-		//
-		//			float diff = currentEvent.mousePosition.y - lastClickPosition.y;
-		//			if (diff > 9 || diff < -9) {
-		//				selectedIndex = Mathf.Clamp(index + (int)(diff / Mathf.Abs(diff)), 0, property.arraySize - 1);
-		//
-		//				if (index != selectedIndex) {
-		//					property.MoveArrayElement(index, selectedIndex);
-		//					lastClickPosition.y += (selectedIndex - index) * 18;
-		//					pressedDict[name + selectedIndex] = true;
-		//					pressedDict[name + index] = false;
-		//					showingDict.SwitchKeys(name + index, name + selectedIndex);
-		//					showing = false;
-		//					property.serializedObject.ApplyModifiedProperties();
-		//					EditorUtility.SetDirty(property.serializedObject.targetObject);
-		//				}
-		//			}
-		//		}
-		//
-		//		return showing;
-		//	}
+		public void AddToArray(SerializedProperty arrayProperty, AddCallback addCallback = null) {
+			if (addCallback == null) {
+				arrayProperty.arraySize += 1;
+				arrayProperty.serializedObject.ApplyModifiedProperties();
+				EditorUtility.SetDirty(arrayProperty.serializedObject.targetObject);
+			}
+			else {
+				addCallback(arrayProperty);
+			}
+		}
+	
+		public void DeleteFromArray(SerializedProperty arrayProperty, int indexToRemove, DeleteCallback deleteCallback = null) {
+			if (deleteCallback == null) {
+				arrayProperty.DeleteArrayElementAtIndex(indexToRemove);
+				arrayProperty.serializedObject.ApplyModifiedProperties();
+				EditorUtility.SetDirty(arrayProperty.serializedObject.targetObject);
+			}
+			else {
+				deleteCallback(arrayProperty, indexToRemove);
+			}
+			deleteBreak = true;
+		}
+
+		public void ReorderArray(SerializedProperty arrayProperty, int soureceIndex, int targetIndex, ReorderCallback reorderCallback = null) {
+			if (reorderCallback == null) {
+				arrayProperty.MoveArrayElement(soureceIndex, targetIndex);
+				serializedObject.ApplyModifiedProperties();
+				EditorUtility.SetDirty(arrayProperty.serializedObject.targetObject);
+			}
+			else {
+				reorderCallback(arrayProperty, soureceIndex, targetIndex);
+			}
+		}
+		
+		public int GetArraySize(SerializedProperty property, int overrideArraySize) {
+			int arraySize = property.arraySize;
+			if (overrideArraySize >= 0) {
+				arraySize = overrideArraySize;
+			}
+			return arraySize;
+		}
+		#endregion
 	}
 }

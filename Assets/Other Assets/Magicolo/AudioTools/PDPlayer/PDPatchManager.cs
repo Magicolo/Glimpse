@@ -25,6 +25,7 @@ namespace Magicolo.AudioTools {
 				pdPlayer.itemManager.Initialize();
 			}
 			LibPD.ComputeAudio(true);
+			pdPlayer.communicator.SendValue("UMasterVolume", pdPlayer.generalSettings.MasterVolume);
 		}
 	
 		public void Close(params string[] patchesName) {
@@ -87,6 +88,7 @@ namespace Magicolo.AudioTools {
 		public void Start() {
 			LibPD.OpenPatch(Application.streamingAssetsPath + Path.AltDirectorySeparatorChar + pdPlayer.editorHelper.initializePatchPath);
 			LibPD.ComputeAudio(true);
+			pdPlayer.communicator.SendValue("UMasterVolume", pdPlayer.generalSettings.MasterVolume);
 		}
 		
 		public void Stop() {

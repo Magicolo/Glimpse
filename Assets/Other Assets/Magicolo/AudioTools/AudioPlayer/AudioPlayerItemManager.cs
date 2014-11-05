@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using System.Collections;
 using Magicolo.AudioTools;
@@ -40,17 +41,18 @@ namespace Magicolo.AudioTools {
 			gainManager.Initialize(source, audioItem, audioPlayer);
 			audioItem.Update();
 			inactiveAudioItems.Add(audioItem);
-			
 			return audioItem;
 		}
 		
 		public virtual AudioItem GetAudioItem(AudioContainer container, GameObject source) {
 			MultipleAudioItem multipleAudioItem;
 			
-			idCounter += 1;
 			switch (container.type) {
 				case AudioContainer.Types.RandomContainer:
 					multipleAudioItem = GetRandomAudioItem(container, container.childrenIds, source);
+					break;
+				case AudioContainer.Types.SwitchContainer:
+					multipleAudioItem = GetSwitchAudioItem(container, container.childrenIds, source);
 					break;
 				default:
 					multipleAudioItem = GetMixAudioItem(container, container.childrenIds, source);
@@ -76,9 +78,9 @@ namespace Magicolo.AudioTools {
 			
 			switch (subContainer.type) {
 				default:
-					if (subContainer.audioOptions != null) {
-						sourceAudioItem = GetSingleAudioItem(subContainer.audioOptions.name, source);
-						sourceAudioItem.containerAudioOptions = subContainer.options;
+					if (subContainer.audioInfo != null) {
+						sourceAudioItem = GetSingleAudioItem(subContainer.audioInfo.Name, source);
+						sourceAudioItem.startAudioOptions = subContainer.audioOptions;
 					}
 					break;
 			}
@@ -91,6 +93,9 @@ namespace Magicolo.AudioTools {
 			switch (subContainer.type) {
 				case AudioSubContainer.Types.RandomContainer:
 					multipleAudioItem = GetRandomAudioItem(container, subContainer.childrenIds, source);
+					break;
+				case AudioSubContainer.Types.SwitchContainer:
+					multipleAudioItem = GetSwitchAudioItem(container, subContainer.childrenIds, source);
 					break;
 				default:
 					multipleAudioItem = GetMixAudioItem(container, subContainer.childrenIds, source);
@@ -109,6 +114,9 @@ namespace Magicolo.AudioTools {
 					mixAudioItem.AddAudioItem(childAudioItem);
 				}
 			}
+			
+			mixAudioItem.Update();
+			inactiveAudioItems.Add(mixAudioItem);
 			return mixAudioItem;
 		}
 		
@@ -128,9 +136,49 @@ namespace Magicolo.AudioTools {
 			
 			AudioSubContainer randomChildContainer = HelperFunctions.WeightedRandom(childcontainers, weights);
 			if (randomAudioItem != null) {
-				randomAudioItem.AddAudioItem(GetAudioItem(container, randomChildContainer, source));
+				AudioItem childAudioItem = GetAudioItem(container, randomChildContainer, source);
+				if (childAudioItem != null) {
+					randomAudioItem.AddAudioItem(childAudioItem);
+				}
 			}
+			
+			randomAudioItem.Update();
+			inactiveAudioItems.Add(randomAudioItem);
 			return randomAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetSwitchAudioItem(AudioContainer container, List<int> childrenIds, GameObject source) {
+			idCounter += 1;
+			MultipleAudioItem switchAudioItem = new MultipleAudioItem(container.Name, idCounter, this, audioPlayer);
+			
+			string stateName = "";
+			AudioSubContainer[] childrenSubContainers = container.IdsToSubContainers(childrenIds);
+			
+			if (childrenSubContainers[0].parentId == 0 && container.stateHolder != null && !string.IsNullOrEmpty(container.statePath)) {
+				stateName = "" + container.stateHolder.GetValueFromMember(container.statePath);
+			}
+			else {
+				AudioSubContainer parentSubContainer = container.GetSubContainerWithID(childrenSubContainers[0].parentId);
+				
+				if (parentSubContainer.stateHolder != null && !string.IsNullOrEmpty(parentSubContainer.statePath)) {
+					stateName = "" + parentSubContainer.stateHolder.GetValueFromMember(parentSubContainer.statePath);
+				}
+			}
+			
+			if (!string.IsNullOrEmpty(stateName)) {
+				foreach (AudioSubContainer childSubContainer in childrenSubContainers) {
+					if (childSubContainer.stateName == stateName) {
+						AudioItem childAudioItem = GetAudioItem(container, childSubContainer, source);
+						if (childAudioItem != null) {
+							switchAudioItem.AddAudioItem(childAudioItem);
+						}
+					}
+				}
+			}
+			
+			switchAudioItem.Update();
+			inactiveAudioItems.Add(switchAudioItem);
+			return switchAudioItem;
 		}
 	}
 }

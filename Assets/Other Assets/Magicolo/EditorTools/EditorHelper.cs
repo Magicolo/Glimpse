@@ -5,6 +5,8 @@ namespace Magicolo.EditorTools {
 	[System.Serializable]
 	public class EditorHelper {
 
+		public Object[] selection;
+		
 		public virtual void Update() {
 			#if UNITY_EDITOR
 			Unsubscribe();
@@ -22,6 +24,7 @@ namespace Magicolo.EditorTools {
 			UnityEditor.EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
 			UnityEditor.EditorApplication.searchChanged += OnSearchChanged;
 			UnityEditor.EditorApplication.update += OnUpdate;
+			UnityEditor.EditorApplication.update += CheckForSelectionChanges;
 			#endif
 		}
 		
@@ -35,6 +38,7 @@ namespace Magicolo.EditorTools {
 			UnityEditor.EditorApplication.projectWindowItemOnGUI -= OnProjectWindowItemGUI;
 			UnityEditor.EditorApplication.searchChanged -= OnSearchChanged;
 			UnityEditor.EditorApplication.update -= OnUpdate;
+			UnityEditor.EditorApplication.update -= CheckForSelectionChanges;
 			#endif
 		}
 		
@@ -48,6 +52,7 @@ namespace Magicolo.EditorTools {
 		}
 		
 		public virtual void OnPlaymodeStateChanged() {
+			Update();
 		}
 		
 		public virtual void OnProjectWindowChanged() {
@@ -59,7 +64,35 @@ namespace Magicolo.EditorTools {
 		public virtual void OnSearchChanged() {
 		}
 		
+		public virtual void OnSelectionChanged() {
+		}
+		
 		public virtual void OnUpdate() {
+		}
+		
+		void CheckForSelectionChanges() {
+			#if UNITY_EDITOR
+			bool changed = false;
+			Object[] currentSelection = UnityEditor.Selection.objects;
+			
+			if (selection == null || selection.Length != currentSelection.Length) {
+				changed = true;
+			}
+			else {
+				for (int i = 0; i < selection.Length; i++) {
+					if (selection[i] != currentSelection[i]){
+						changed = true;
+						break;
+					}
+				}
+			}
+			
+			if (changed) {
+				selection = UnityEditor.Selection.objects;
+				OnSelectionChanged();
+				UnityEditor.Selection.objects = selection;
+			}
+			#endif
 		}
 	}
 }

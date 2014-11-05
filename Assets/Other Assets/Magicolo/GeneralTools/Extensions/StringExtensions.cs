@@ -79,11 +79,34 @@ public static class StringExtensions {
 		return reversed;
 	}
 	
-	public static string Capitalize(this string s) {
+	public static string Capitalized(this string s) {
 		string capitalized = "";
 		if (s.Length == 0) capitalized = char.ToUpper(s[0]).ToString();
 		else if (s.Length > 1) capitalized = char.ToUpper(s[0]) + s.Substring(1);
 		return capitalized;
+	}
+	
+	public static T Capitalized<T>(this T stringArray) where T : IList<string> {
+		for (int i = 0; i < stringArray.Count; i++) {
+			stringArray[i] = stringArray[i].Capitalized();
+		}
+		return stringArray;
+	}
+	
+	public static string Concat(this IList<string> stringArray, string separator) {
+		string concat = "";
+		
+		for (int i = 0; i < stringArray.Count; i++) {
+			concat += stringArray[i];
+			if (i < stringArray.Count - 1) {
+				concat += separator;
+			}
+		}
+		return concat;
+	}
+	
+	public static string Concat(this IList<string> stringArray) {
+		return stringArray.Concat("");
 	}
 	
 	public static float GetWidth(this string s, Font font) {

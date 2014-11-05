@@ -17,7 +17,7 @@ namespace Magicolo.AudioTools {
 			this.audioItem = audioItem;
 			this.player = player;
 			
-			volume = audioItem.GetVolume() * player.generalSettings.masterVolume;
+			volume = audioItem.GetVolume();
 		}
 		
 		public virtual void Activate() {

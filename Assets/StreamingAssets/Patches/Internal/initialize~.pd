@@ -1,8 +1,19 @@
-#N canvas 555 549 397 89 10;
-#X obj 25 56 dac~;
-#X obj 25 39 adc~;
-#X obj 66 43 pdplayer~;
-#X text 22 1 This patch is used internally by the PDPlayer. It must
+#N canvas 555 549 397 158 10;
+#X obj 24 119 dac~;
+#X obj 25 79 adc~;
+#X obj 237 82 pdplayer~;
+#X text 22 11 This patch is used internally by the PDPlayer. It must
 be included in the StreamingAssets folder.;
-#X connect 1 0 0 0;
-#X connect 1 1 0 1;
+#X obj 71 46 r UMasterVolume;
+#X obj 24 100 *~;
+#X obj 46 100 *~;
+#X obj 71 84 line~;
+#X msg 71 65 \$1 20;
+#X connect 1 0 5 0;
+#X connect 1 1 6 0;
+#X connect 4 0 8 0;
+#X connect 5 0 0 0;
+#X connect 6 0 0 1;
+#X connect 7 0 6 1;
+#X connect 7 0 5 1;
+#X connect 8 0 7 0;

@@ -49,10 +49,22 @@ public static class ArrayExtensions {
 	}
 	
 	public static T GetRandom<T>(this IList<T> array) {
-		if (array == null || array.Count == 0)
-			return default(T);
+		if (array == null || array.Count == 0) return default(T);
 		
 		return array[UnityEngine.Random.Range(0, array.Count)];
+	}
+	
+	public static void Move<T>(this IList<T> array, int sourceIndex, int targetIndex){
+		int delta = Mathf.Abs(targetIndex - sourceIndex);
+		int direction = (targetIndex - sourceIndex) / delta;
+		
+		for (int i = 0; i < delta; i++) {
+			T sourceObject = array[sourceIndex];
+			T targetObject = array[sourceIndex + direction];
+			array[sourceIndex + direction] = sourceObject;
+			array[sourceIndex] = targetObject;
+			sourceIndex += direction;
+		}
 	}
 	
 	public static T[] Slice<T>(this T[] array, int startIndex) {

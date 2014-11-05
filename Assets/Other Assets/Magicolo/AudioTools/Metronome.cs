@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using Candlelight;
 using System.Collections;
 using Magicolo.GeneralTools;
 
 namespace Magicolo.AudioTools {
 	public class Metronome : MonoBehaviour {
 
-		[SerializeField, PropertyBackingField(typeof(Metronome), "BeatsPerMinute", typeof(RangeAttribute), 0.1F, 1000F)]
+		[SerializeField, PropertyField(typeof(RangeAttribute), 0.1F, 1000F)]
 		float beatsPerMinute = 120;
 		public float BeatsPerMinute {
 			get {
@@ -20,7 +19,7 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
-		[SerializeField, PropertyBackingField(typeof(Metronome), "BeatsPerMeasure", typeof(MinAttribute), 1F)]
+		[SerializeField, PropertyField(typeof(MinAttribute), 1F)]
 		int beatsPerMeasure = 4;
 		public int BeatsPerMeasure {
 			get {

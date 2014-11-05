@@ -2,9 +2,9 @@
 using Magicolo.AudioTools;
 using System.Collections;
 
+// TODO Fuse PDEditorModule and PDModule.
 // TODO Add sends in the inspector.
 // TODO Check if the persistent option works with Pure Data.
-// FIXME The voices should be centralized in the AudioPlayerItemManager instead of being managed separatly in the PDAudioItemManager.
 
 [RequireComponent(typeof(AudioPlayer))]
 [ExecuteInEditMode]
@@ -27,27 +27,26 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	public PDBridge bridge;
 	public PDCommunicator communicator;
 	public PDPatchManager patchManager;
-	public PDAudioItemManager itemManager;
+	public PDItemManager itemManager;
 	public PDAudioFilterRead filterRead;
 	#endregion
 
 	protected override void Awake() {
 		base.Awake();
 		
-		this.SetExecutionOrder(-10);
-		editorHelper = editorHelper ?? new PDEditorHelper();
-		editorHelper.Initialize(Instance);
-		
 		if (Application.isPlaying) {
 			bridge = new PDBridge(Instance);
 			communicator = new PDCommunicator(Instance);
 			patchManager = new PDPatchManager(Instance);
-			itemManager = new PDAudioItemManager(Instance);
+			itemManager = new PDItemManager(Instance);
 			
 			bridge.Start();
 			communicator.Start();
 			patchManager.Start();
 		}
+		
+		editorHelper = editorHelper ?? new PDEditorHelper();
+		editorHelper.Initialize(Instance);
 	}
 	
 	protected override void SetAudioListener() {
@@ -59,11 +58,6 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 		listener.enabled = true;
 	}
 	
-	protected override void OnLevelWasLoaded(int level) {
-		base.OnLevelWasLoaded(level);
-		SingletonCheck(Instance);
-	}
-	
 	protected virtual void Start() {
 		SingletonCheck(Instance);
 	}
@@ -72,9 +66,11 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 		if (Application.isPlaying) {
 			itemManager.Update();
 		}
-		else {
-			editorHelper.Update();
-		}
+	}
+	
+	protected override void OnLevelWasLoaded(int level) {
+		base.OnLevelWasLoaded(level);
+		SingletonCheck(Instance);
 	}
 	
 	protected virtual void OnApplicationQuit() {
@@ -84,6 +80,15 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 			communicator.Stop();
 		}
 	}
+	
+	#if UNITY_EDITOR
+	[UnityEditor.Callbacks.DidReloadScripts]
+	static void OnReloadScripts() {
+		if (Instance != null) {
+			Instance.Awake();
+		}
+	}
+	#endif
 	
 	void OnDrawGizmos() {
 		editorHelper.DrawGizmos();
@@ -96,7 +101,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	/// <param name="soundName">The name of sound to be played. In Pure Data, use <c>[ureceive~ <paramref name="moduleName"/>_<paramref name="soundName"/>]</c> to receive the audio. Do not send this audio signal through a <c>[uspatialize~]</c> because it is already spatialized.</param>
 	/// <param name="source">The source around which the module and audio source will be spatialized. If a source is already provided in the inspector, it will be overriden. In Pure Data, send the audio that you want spatialized through a <c>[uspatialize~ <paramref name="moduleName"/>]</c>.</param>
 	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="soundName"/> inspector.</param>
-	/// <returns>The AudioItem that will let you control the module.</returns>
+	/// <returns>The AudioItem that will let you control the audio source.</returns>
 	public static AudioItem Play(string moduleName, string soundName, GameObject source, params AudioOption[] audioOptions) {
 		return instance.itemManager.Play(moduleName, soundName, source, audioOptions);
 	}
@@ -107,88 +112,70 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="soundName">The name of sound to be played. In Pure Data, use <c>[ureceive~ <paramref name="moduleName"/>_<paramref name="soundName"/>]</c> to receive the audio. Do not send this audio signal through a <c>[uspatialize~]</c> because it is already spatialized.</param>
 	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="soundName"/> inspector.</param>
-	/// <returns>The AudioItem that will let you control the module.</returns>
+	/// <returns>The AudioItem that will let you control the audio source.</returns>
 	public static AudioItem Play(string moduleName, string soundName, params AudioOption[] audioOptions) {
 		return instance.itemManager.Play(moduleName, soundName, null, audioOptions);
 	}
 	
 	/// <summary>
-	/// Plays a module with an audio source spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a module spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="source">The source around which the module will be spatialized. If a source is already provided in the inspector, it will be overriden. In Pure Data, send the audio that you want spatialized through a <c>[uspatialize~ <paramref name="moduleName"/>]</c>.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the inspector.</param>
 	/// <returns>The AudioItem that will let you control the module.</returns>
-	public static AudioItem Play(string moduleName, GameObject source) {
-		return instance.itemManager.Play(moduleName, source);
+	public static AudioItem Play(string moduleName, GameObject source, params AudioOption[] audioOptions) {
+		return instance.itemManager.Play(moduleName, source, audioOptions);
 	}
 	
 	/// <summary>
 	/// Plays a module with an audio source spatialized around the listener. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the inspector.</param>
 	/// <returns>The AudioItem that will let you control the module.</returns>
-	public static AudioItem Play(string moduleName) {
-		return instance.itemManager.Play(moduleName, null);
+	public static AudioItem Play(string moduleName, params AudioOption[] audioOptions) {
+		return instance.itemManager.Play(moduleName, null, audioOptions);
 	}
 
+	/// <summary>
+	/// Plays a container spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// </summary>
+	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
+	/// <param name="containerName">The name of the container to be played.</param>
+	/// <param name="source">The source around which the module will be spatialized. If a source is already provided in the inspector, it will be overriden. In Pure Data, send the audio that you want spatialized through a <c>[uspatialize~ <paramref name="moduleName"/>]</c>.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="containerName"/> inspector.</param>
+	/// <returns>The AudioItem that will let you control the container.</returns>
 	public static AudioItem PlayContainer(string moduleName, string containerName, GameObject source, params AudioOption[] audioOptions) {
 		return Instance.itemManager.PlayContainer(moduleName, containerName, source, audioOptions);
 	}
 	
+	/// <summary>
+	/// Plays a container spatialized around the listener. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// </summary>
+	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
+	/// <param name="containerName">The name of the container to be played.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="containerName"/> inspector.</param>
+	/// <returns>The AudioItem that will let you control the container.</returns>
 	public static AudioItem PlayContainer(string moduleName, string containerName, params AudioOption[] audioOptions) {
 		return Instance.itemManager.PlayContainer(moduleName, containerName, null, audioOptions);
 	}
 	
 	/// <summary>
-	/// Pauses any audio signals going through a <c>[uspatialize~ <paramref name="moduleName"/>]</c> and any AudioSource connected to the module. In Pure Data, you can receive the pause command (float 0) with a <c>[receive <paramref name="moduleName"/>_Pause]</c>.
+	/// Gets the module of name <paramref name="moduleName"/>.
 	/// </summary>
-	/// <param name="moduleName">The name of the module to be paused.</param>
-	public static void Pause(string moduleName) {
-		instance.itemManager.Pause(moduleName);
+	/// <param name="moduleName">The name of the module to get.</param>
+	/// <returns>The module.</returns>
+	public static AudioItem GetModule(string moduleName) {
+		return Instance.itemManager.GetModule(moduleName);
 	}
-
-	/// <summary>
-	/// Stops any audio signals going through a <c>[uspatialize~ <paramref name="moduleName"/>]</c> and any AudioSource connected to the module. In Pure Data, you can receive the stop command (float 0) with a <c>[receive <paramref name="moduleName"/>_Stop]</c>.
-	/// </summary>
-	/// <param name="moduleName">The name of the module to be stopped.</param>
-	public static void Stop(string moduleName) {
-		instance.itemManager.Stop(moduleName);
-	}
-
-	/// <summary>
-	/// Gets the volume of a module.
-	/// </summary>
-	/// <param name="moduleName">The name of the module from which to get the volume.</param>
-	/// <returns>The volume.</returns>
-	public static float GetVolume(string moduleName) {
-		return instance.itemManager.GetVolume(moduleName);
-	}
-
-	/// <summary>
-	/// Ramps the volume of a module. In Pure Data, you can receive the volume command (float <paramref name="targetVolume"/>) with a <c>[receive <paramref name="moduleName"/>_Volume]</c>.
-	/// </summary>
-	/// <param name="moduleName">The name of the module from which to ramp the volume.</param>
-	/// <param name="targetVolume">The target to which the volume will be ramped.</param>
-	/// <param name="time">The time it will take for the volume to reach the <paramref name="targetVolume"/>.</param>
-	public static void SetVolume(string moduleName, float targetVolume, float time) {
-		instance.itemManager.SetVolume(moduleName, targetVolume, time);
-	}
-
-	/// <summary>
-	/// Sets the volume of a module. In Pure Data, you can receive the volume command (float <paramref name="targetVolume"/>) with a <c>[receive <paramref name="moduleName"/>_Volume]</c>.
-	/// </summary>
-	/// <param name="moduleName">The name of the module from which to set the volume.</param>
-	/// <param name="targetVolume">The target to which the volume will be set.</param>
-	public static void SetVolume(string moduleName, float targetVolume) {
-		instance.itemManager.SetVolume(moduleName, targetVolume);
-	}
-
+	
 	/// <summary>
 	/// Gets the master volume of the AudioPlayer.
 	/// </summary>
 	/// <returns>The master volume.</returns>
 	public static float GetMasterVolume() {
-		return instance.generalSettings.masterVolume;
+		return instance.generalSettings.MasterVolume;
 	}
 	
 	/// <summary>

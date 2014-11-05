@@ -22,7 +22,7 @@ namespace Magicolo.AudioTools {
 			
 			index = GetUnusedIndex();
 			if (index == -1) {
-				Debug.LogWarning(string.Format("No available voice for audio item {0} of id {1}.", audioItem.Name, audioItem.GetID()));
+				Debug.LogWarning(string.Format("No available voice for audio item {0} of id {1}.", audioItem.Name, audioItem.Id));
 				audioItem.StopImmediate();
 				return;
 			}

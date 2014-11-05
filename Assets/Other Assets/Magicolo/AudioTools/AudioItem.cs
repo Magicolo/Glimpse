@@ -3,21 +3,65 @@ using UnityEngine;
 using System.Collections;
 using Magicolo.AudioTools;
 using Magicolo.GeneralTools;
-using Candlelight;
 
 [System.Serializable]
-public abstract class AudioItem : Magicolo.GeneralTools.INamable {
+public abstract class AudioItem : INamable {
 
-	public string Name { get; set; }
+	[SerializeField]
+	string name;
+	public string Name {
+		get {
+			return name;
+		}
+		set {
+			name = value;
+		}
+	}
 	
-	protected int Id { get; set; }
+	[SerializeField]
+	int id;
+	public int Id {
+		get {
+			return id;
+		}
+		set {
+			id = value;
+		}
+	}
 	
-	protected float Volume { get; set; }
-	
-	protected float Pitch { get; set; }
-	
-	protected AudioStates State { get; set; }
+	[SerializeField]
+	AudioStates state;
+	public AudioStates State {
+		get {
+			return state;
+		}
+		set {
+			state = value;
+		}
+	}
 
+	[SerializeField]
+	float volume;
+	protected float Volume {
+		get {
+			return volume;
+		}
+		set {
+			volume = value;
+		}
+	}
+	
+	[SerializeField]
+	float pitch;
+	protected float Pitch {
+		get {
+			return pitch;
+		}
+		set {
+			pitch = value;
+		}
+	}
+	
 	protected List<AudioAction> actions = new List<AudioAction>();
 	
 	protected AudioItemManager itemManager;
@@ -88,22 +132,6 @@ public abstract class AudioItem : Magicolo.GeneralTools.INamable {
 		State = AudioStates.Stopped;
 	}
 
-	/// <summary>
-	/// Gets the unique ID of the AudioItem.
-	/// </summary>
-	/// <returns>The ID.</returns>
-	public virtual int GetID() {
-		return Id;
-	}
-	
-	/// <summary>
-	/// Gets the current state of the AudioItem.
-	/// </summary>
-	/// <returns>The state.</returns>
-	public virtual AudioStates GetState() {
-		return State;
-	}
-	
 	/// <summary>
 	/// Gets the volume of the AudioItem.
 	/// </summary>
@@ -201,4 +229,9 @@ public abstract class AudioItem : Magicolo.GeneralTools.INamable {
 		UpdatePitch();
 	}
 	#endregion
+	
+	public override string ToString() {
+		return string.Format("{0}({1}, {2}, {3})", GetType().Name, Name, Id, State);
+	}
+
 }

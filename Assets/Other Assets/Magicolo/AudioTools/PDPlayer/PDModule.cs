@@ -6,7 +6,7 @@ namespace Magicolo.AudioTools {
 		public PDSpatializer spatializer;
 		public PDPlayer pdPlayer;
 		
-		public PDModule(string name, int id, PDSpatializer spatializer, PDAudioItemManager itemManager, PDPlayer pdPlayer)
+		public PDModule(string name, int id, PDSpatializer spatializer, PDItemManager itemManager, PDPlayer pdPlayer)
 			: base(name, id, itemManager, pdPlayer) {
 			this.spatializer = spatializer;
 			this.pdPlayer = pdPlayer;
@@ -14,7 +14,7 @@ namespace Magicolo.AudioTools {
 			Initialize();
 		}
 
-		public PDModule(string name, int id, PDEditorModule editorModule, PDAudioItemManager itemManager, PDPlayer pdPlayer)
+		public PDModule(string name, int id, PDEditorModule editorModule, PDItemManager itemManager, PDPlayer pdPlayer)
 			: base(name, id, itemManager, pdPlayer) {
 			this.Volume = editorModule.Volume;
 			this.spatializer = new PDSpatializer(name, editorModule, pdPlayer);
@@ -23,7 +23,7 @@ namespace Magicolo.AudioTools {
 			Initialize();
 		}
 		
-		public PDModule(int id, PDEditorModule editorModule, PDAudioItemManager itemManager, PDPlayer pdPlayer)
+		public PDModule(int id, PDEditorModule editorModule, PDItemManager itemManager, PDPlayer pdPlayer)
 			: base(editorModule.Name, id, itemManager, pdPlayer) {
 			this.Volume = editorModule.Volume;
 			this.spatializer = new PDSpatializer(editorModule, pdPlayer);
@@ -37,7 +37,6 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public override void Update() {
-			UpdateAudioItems();
 			RemoveStoppedAudioItems();
 			
 			if (State == AudioStates.Playing) {
@@ -62,7 +61,6 @@ namespace Magicolo.AudioTools {
 				base.Play(audioOptions);
 			
 				pdPlayer.communicator.SendValue(Name + "_Play", 1);
-				pdPlayer.communicator.SendValue("UMasterVolume", player.generalSettings.masterVolume);
 			}
 		}
 		

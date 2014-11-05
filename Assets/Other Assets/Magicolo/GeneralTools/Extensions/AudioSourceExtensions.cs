@@ -15,6 +15,7 @@ public static class AudioSourceExtensions {
 		}
 		
 		GameObject gameObject = new GameObject(audioSource.clip.name);
+		gameObject.hideFlags = HideFlags.HideInHierarchy;
 		AudioSource source = gameObject.AddCopiedComponent<AudioSource>(audioSource);
 		gameObject.transform.parent = listener.transform;
 		gameObject.transform.Reset();

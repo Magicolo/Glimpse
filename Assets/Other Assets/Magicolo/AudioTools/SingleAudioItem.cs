@@ -8,7 +8,7 @@ namespace Magicolo.AudioTools {
 	[System.Serializable]
 	public class SingleAudioItem : AudioItem {
 
-		public AudioOption[] containerAudioOptions = new AudioOption[0];
+		public AudioOption[] startAudioOptions = new AudioOption[0];
 		
 		public AudioSource audioSource;
 		public AudioInfo audioInfo;
@@ -32,7 +32,7 @@ namespace Magicolo.AudioTools {
 			base.Update();
 			
 			if (State == AudioStates.Playing && !audioSource.loop) {
-				if ((audioSource.pitch > 0 && audioSource.time >= audioSource.clip.length - audioInfo.fadeOut) || (audioSource.pitch < 0 && audioSource.time <= audioInfo.fadeOut)) {
+				if (audioSource.clip == null || (audioSource.pitch > 0 && audioSource.time >= audioSource.clip.length - audioInfo.fadeOut) || (audioSource.pitch < 0 && audioSource.time <= audioInfo.fadeOut)) {
 					Stop();
 				}
 			}
@@ -40,7 +40,7 @@ namespace Magicolo.AudioTools {
 		}
 		
 		protected override void UpdateVolume() {
-			gainManager.volume = Volume * player.generalSettings.masterVolume;
+			gainManager.volume = Volume;
 		}
 		
 		protected override void UpdatePitch() {
@@ -70,13 +70,13 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public override void Play(params AudioOption[] audioOptions) {
-			List<AudioOption> audioOptionsSum = new List<AudioOption>(containerAudioOptions);
+			List<AudioOption> audioOptionsSum = new List<AudioOption>(startAudioOptions);
 			audioOptionsSum.AddRange(audioOptions);
 			
 			if (!TryAddDelayedAction(AudioAction.ActionTypes.Play, audioOptionsSum.ToArray())) {
-				audioInfo.ApplyAudioOptions(audioSource, containerAudioOptions);
+				audioInfo.ApplyAudioOptions(audioSource, startAudioOptions);
 				audioInfo.ApplyAudioOptions(audioSource, audioOptions);
-				containerAudioOptions = new AudioOption[0];
+				startAudioOptions = new AudioOption[0];
 				
 				if (State == AudioStates.Waiting) {
 					//HACK Trick to deal with reversed sounds.
@@ -125,10 +125,12 @@ namespace Magicolo.AudioTools {
 		public override void StopImmediate() {
 			if (State != AudioStates.Stopped) {
 				base.Stop();
+				
 				audioSource.Stop();
 				gainManager.Deactivate();
 				itemManager.Deactivate(this);
 				coroutineHolder.RemoveAllCoroutines();
+				Update();
 			}
 		}
 		

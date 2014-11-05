@@ -1,16 +1,20 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using System.Collections;
+using Magicolo.GeneralTools;
 
 namespace Magicolo.AudioTools {
 	[System.Serializable]
-	public class AudioInfo {
+	public class AudioInfo : INamable {
 
+		[SerializeField]
+		string name;
 		public string Name {
 			get {
-				return audioOptions.name;
+				return name;
 			}
 			set {
-				audioOptions.name = value;
+				name = value;
 			}
 		}
 		
@@ -18,7 +22,7 @@ namespace Magicolo.AudioTools {
 		AudioSource source;
 		public AudioSource Source {
 			get {
-				source = source ?? audioOptions.GetOrAddComponent<AudioSource>();
+				source = source ?? AudioSetup.GetComponent<AudioSource>();
 				return source;
 			}
 			set {
@@ -28,13 +32,33 @@ namespace Magicolo.AudioTools {
 
 		public AudioClip Clip {
 			get {
+				Source.clip = Resources.Load<AudioClip>(clipPath);
 				return Source.clip;
 			}
+		}
+		
+		public string clipPath;
+		
+		[SerializeField]
+		AudioSetup audioSetup;
+		public AudioSetup AudioSetup {
+			get {
+				if (audioSetup == null && !string.IsNullOrEmpty(name)) {
+					GameObject defaultOptionsGameObject = GameObject.Find(Name);
+					if (defaultOptionsGameObject != null) {
+						audioSetup = defaultOptionsGameObject.GetComponent<AudioSetup>();
+					}
+				}
+				return audioSetup;
+			}
 			set {
-				Source.clip = value;
+				audioSetup = value;
+				Name = audioSetup.name;
 			}
 		}
 
+		AudioOption[] defaultAudioOptions;
+		
 		public float fadeIn;
 		public AnimationCurve fadeInCurve = new AnimationCurve(new []{ new Keyframe(0, 0), new Keyframe(1, 1) });
 		public float fadeOut = 0.1F;
@@ -45,12 +69,12 @@ namespace Magicolo.AudioTools {
 		public SyncMode syncMode;
 		public bool doNotKill;
 		
-		public AudioOptions audioOptions;
 		public AudioPlayer audioPlayer;
 
-		public AudioInfo(AudioSource source, AudioOptions audioOptions, AudioPlayer audioPlayer) {
+		public AudioInfo(AudioSource source, AudioSetup defaultAudioSetup, AudioPlayer audioPlayer) {
+			this.name = defaultAudioSetup.name;
 			this.source = source;
-			this.audioOptions = audioOptions;
+			this.audioSetup = defaultAudioSetup;
 			this.audioPlayer = audioPlayer;
 		}
 		
@@ -58,6 +82,40 @@ namespace Magicolo.AudioTools {
 			this.Copy(audioInfo);
 		}
 
+		public void ConvertToAudioOptions() {
+			defaultAudioOptions = new [] {
+				AudioOption.Mute(Source.mute),
+				AudioOption.BypassEffects(Source.bypassEffects),
+				AudioOption.BypassListenerEffects(Source.bypassListenerEffects),
+				AudioOption.BypassReverbZones(Source.bypassReverbZones),
+				AudioOption.Loop(Source.loop),
+				AudioOption.Priority(Source.priority),
+				AudioOption.Volume(Source.volume),
+				AudioOption.Pitch(Source.pitch),
+				AudioOption.DopplerLevel(Source.dopplerLevel),
+				AudioOption.RolloffMode(Source.rolloffMode),
+				AudioOption.MinDistance(Source.minDistance),
+				AudioOption.PanLevel(Source.panLevel),
+				AudioOption.Spread(Source.spread),
+				AudioOption.MaxDistance(Source.maxDistance),
+				AudioOption.Pan2D(Source.pan),
+				AudioOption.FadeIn(fadeIn),
+				AudioOption.FadeInCurve(fadeInCurve),
+				AudioOption.FadeOut(fadeOut),
+				AudioOption.FadeOutCurve(fadeOutCurve),
+				AudioOption.RandomVolume(randomVolume),
+				AudioOption.RandomPitch(randomPitch),
+				AudioOption.Delay(delay),
+				AudioOption.SyncMode(syncMode),
+				AudioOption.DoNotKill(doNotKill)
+			};
+		}
+		
+		public void ApplyDefaultOptions(AudioSource audioSource) {
+			ConvertToAudioOptions();
+			ApplyAudioOptions(audioSource, defaultAudioOptions);
+		}
+		
 		public void ApplyAudioOptions(AudioSource audioSource, params AudioOption[] options) {
 			foreach (AudioOption option in options) {
 				ApplyAudioOption(option, audioSource);
@@ -125,7 +183,7 @@ namespace Magicolo.AudioTools {
 				case AudioOption.OptionTypes.DopplerLevel:
 					audioSource.dopplerLevel = option.GetValue<float>();
 					break;
-				case AudioOption.OptionTypes.VolumeRolloff:
+				case AudioOption.OptionTypes.RolloffMode:
 					audioSource.rolloffMode = option.GetValue<AudioRolloffMode>();
 					break;
 				case AudioOption.OptionTypes.MinDistance:

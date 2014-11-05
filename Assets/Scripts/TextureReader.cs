@@ -8,11 +8,12 @@ public class TextureReader : MonoBehaviour {
 	public Terrain gameTerrain;
 	public Transform playerTransform;
 	
-	static readonly Dictionary<int, string> indexTextureDict = new Dictionary<int, string> {
-		{ 0, "Dirt" },
-		{ 1, "Grass" },
-		{ 2, "Stone" },
-		{ 3, "Dirt" }
+	static readonly Dictionary<int, AudioMaster.FootstepSurfaces> indexTextureDict = new Dictionary<int, AudioMaster.FootstepSurfaces> {
+		{ 0, AudioMaster.FootstepSurfaces.Dirt },
+		{ 1, AudioMaster.FootstepSurfaces.Grass },
+		{ 2, AudioMaster.FootstepSurfaces.Stone },
+		{ 3, AudioMaster.FootstepSurfaces.Dirt },
+		{ 4, AudioMaster.FootstepSurfaces.Stone }
 	};
 	
 	static TextureReader instance;
@@ -83,8 +84,7 @@ public class TextureReader : MonoBehaviour {
 	/// Gets the most dominant texture name under the player.
 	/// </summary>
 	/// <returns>The texture name.</returns>
-	public static string GetMainTextureName(){
+	public static AudioMaster.FootstepSurfaces GetMainTexture(){
 		return indexTextureDict[Instance.GetMainTextureIndex()];
 	}
-		
 }

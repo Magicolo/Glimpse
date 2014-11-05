@@ -18,6 +18,20 @@ public static class HelperFunctions {
 		return Mathf.Sqrt(Mathf.Pow(a, 2) + Mathf.Pow(b, 2));
 	}
 	
+	public static string GetResourcesPath(Object obj){
+		string path = "";
+		
+		#if UNITY_EDITOR
+		path = HelperFunctions.GetPathWithoutExtension(UnityEditor.AssetDatabase.GetAssetPath(obj).TrimStart("Assets/Resources/".ToCharArray()));
+		#endif
+		
+		return path;
+	}
+	
+	public static string GetPathWithoutExtension(string path){
+		return Path.GetDirectoryName(path) + Path.AltDirectorySeparatorChar + Path.GetFileNameWithoutExtension(path);
+	}
+	
 	public static string GetFolderPath(string folderName) {
 		string folderPath = "";
 		
@@ -33,7 +47,7 @@ public static class HelperFunctions {
 		return folderPath;
 	}
 	
-	public static T GetAssetInFolder<T>(string assetFileName, string folderName) where T : Object {
+	public static T LoadAssetInFolder<T>(string assetFileName, string folderName) where T : Object {
 		T asset = default(T);
 		
 		#if UNITY_EDITOR

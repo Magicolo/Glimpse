@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -8,11 +9,17 @@ using UnityEngine;
 using System.Collections;
 
 public static class ObjectExtensions {
+	
+	public const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 
 	public static void Remove(this UnityEngine.Object obj) {
 		if (obj != null) {
-			if (Application.isPlaying) UnityEngine.Object.Destroy(obj);
-			else UnityEngine.Object.DestroyImmediate(obj);
+			if (Application.isPlaying) {
+				UnityEngine.Object.Destroy(obj);
+			}
+			else {
+				UnityEngine.Object.DestroyImmediate(obj);
+			}
 		}
 	}
 		
@@ -38,6 +45,161 @@ public static class ObjectExtensions {
 		return obj.SendMessageToObjectsOfType<T>(methodName, obj, sendToSelf, options);
 	}
 
+	public static MemberInfo GetMemberInfo(this object obj, string memberName) {
+		FieldInfo field = obj.GetType().GetField(memberName, Flags);
+		if (field != null) {
+			return field;
+		}
+		
+		PropertyInfo property = obj.GetType().GetProperty(memberName, Flags);
+		if (property != null) {
+			return property;
+		}
+		return null;
+	}
+	
+	public static MemberInfo GetMemberInfoAtPath(this object obj, string memberPath) {
+		string[] pathSplit = memberPath.Split('.');
+		
+		if (pathSplit.Length <= 1) {
+			return obj.GetMemberInfo(pathSplit.Pop(out pathSplit));
+		}
+		
+		object value = obj.GetValueFromMember(pathSplit.Pop(out pathSplit));
+		
+		while (pathSplit.Length > 1) {
+			value = value.GetValueFromMember(pathSplit.Pop(out pathSplit));
+		}
+		
+		return value.GetMemberInfo(pathSplit.Pop(out pathSplit));
+	}
+	
+	public static T GetValueFromMember<T>(this object obj, string memberName) {
+		return (T)obj.GetValueFromMember(memberName);
+	}
+	
+	public static object GetValueFromMember(this object obj, string memberName) {
+		if (obj is IList) {
+			return ((IList)obj)[int.Parse(memberName)];
+		}
+		
+		MemberInfo member = obj.GetMemberInfo(memberName);
+		
+		FieldInfo field = member as FieldInfo;
+		if (field != null) {
+			return field.GetValue(obj);
+		}
+		
+		PropertyInfo property = member as PropertyInfo;
+		if (property != null) {
+			return property.GetValue(obj, null);
+		}
+		
+		return null;
+	}
+	
+	public static T GetValueFromMemberAtPath<T>(this object obj, string memberPath) {
+		return (T)obj.GetValueFromMemberAtPath(memberPath);
+	}
+	
+	public static object GetValueFromMemberAtPath(this object obj, string memberPath) {
+		MemberInfo member = obj.GetMemberInfoAtPath(memberPath);
+		string[] pathSplit = memberPath.Split('.');
+		
+		if (pathSplit.Length <= 1) {
+			return obj.GetValueFromMember(pathSplit.Pop(out pathSplit));
+		}
+		
+		int index;
+		if (int.TryParse(pathSplit.Last(), out index)) {
+			Array.Resize(ref pathSplit, pathSplit.Length - 1);
+			return ((IList)obj.GetValueFromMemberAtPath(pathSplit.Concat(".")))[index];
+		}
+		Array.Resize(ref pathSplit, pathSplit.Length - 1);
+		
+		object container = obj.GetValueFromMemberAtPath(pathSplit.Concat("."));
+		
+		FieldInfo field = member as FieldInfo;
+		if (field != null) {
+			return field.GetValue(container);
+		}
+		
+		PropertyInfo property = member as PropertyInfo;
+		if (property != null) {
+			return property.GetValue(container, null);
+		}
+		
+		return null;
+	}
+	
+	public static void SetValueToMember(this object obj, string memberName, object value) {
+		MemberInfo member = obj.GetMemberInfo(memberName);
+		
+		FieldInfo field = member as FieldInfo;
+		if (field != null) {
+			field.SetValue(obj, value);
+			return;
+		}
+		
+		PropertyInfo property = member as PropertyInfo;
+		if (property != null) {
+			property.SetValue(obj, value, null);
+			return;
+		}
+	}
+	
+	public static void SetValueToMemberAtPath(this object obj, string memberPath, object value) {
+		MemberInfo member = obj.GetMemberInfoAtPath(memberPath);
+		string[] pathSplit = memberPath.Split('.');
+		
+		if (pathSplit.Length > 1) {
+			Array.Resize(ref pathSplit, pathSplit.Length - 1);
+		}
+		
+		object container = obj.GetValueFromMemberAtPath(pathSplit.Concat("."));
+		
+		FieldInfo field = member as FieldInfo;
+		if (field != null) {
+			field.SetValue(container, value);
+			return;
+		}
+		
+		PropertyInfo property = member as PropertyInfo;
+		if (property != null) {
+			property.SetValue(container, value, null);
+			return;
+		}
+	}
+	
+	public static object InvokeMethod(this object obj, string methodName, params object[] arguments) {
+		MethodInfo method = obj.GetType().GetMethod(methodName, Flags);
+		if (method != null) {
+			return method.Invoke(obj, arguments);
+		}
+		return null;
+	}
+	
+	public static string[] GetFieldsPropertiesNames(this Type type, params Type[] filter) {
+		List<string> names = new List<string>();
+		
+		foreach (FieldInfo field in type.GetFields(Flags)) {
+			if (filter == null || filter.Length == 0 || filter.Any(t => t.IsAssignableFrom(field.FieldType))) {
+				names.Add(field.Name);
+			}
+		}
+		
+		foreach (PropertyInfo property in type.GetProperties(Flags)) {
+			if (filter == null || filter.Length == 0 || filter.Any(t => t.IsAssignableFrom(property.PropertyType))) {
+				names.Add(property.Name);
+			}
+		}
+		return names.ToArray();
+	}
+	
+	public static string[] GetFieldsPropertiesNames(this object obj, params Type[] filter) {
+		return GetFieldsPropertiesNames(obj.GetType(), filter);
+	}
+	
 	public static T Clone<T>(this T toClone) {
 		if (!typeof(T).IsSerializable) {
 			throw new ArgumentException("The type must be serializable.", "source");
@@ -69,7 +231,7 @@ public static class ObjectExtensions {
 			parametersToIgnore = parametersToIgnoreList.ToArray();
 		}
 		
-		foreach (FieldInfo fieldInfo in copyFrom.GetType().GetFields()) {
+		foreach (FieldInfo fieldInfo in copyFrom.GetType().GetFields(Flags)) {
 			if ((fieldInfo.IsPublic || fieldInfo.GetCustomAttributes(typeof(SerializeField), true).Length != 0) && !fieldInfo.IsLiteral && fieldInfo.GetCustomAttributes(typeof(ObsoleteAttribute), true).Length == 0 && !parametersToIgnore.Contains(fieldInfo.Name)) {
 				try {
 					fieldInfo.SetValue(copyTo, fieldInfo.GetValue(copyFrom));
@@ -78,7 +240,7 @@ public static class ObjectExtensions {
 				}
 			}
 		}
-		foreach (PropertyInfo propertyInfo in copyFrom.GetType().GetProperties()) {
+		foreach (PropertyInfo propertyInfo in copyFrom.GetType().GetProperties(Flags)) {
 			if (propertyInfo.CanWrite && propertyInfo.GetCustomAttributes(typeof(ObsoleteAttribute), true).Length == 0 && !parametersToIgnore.Contains(propertyInfo.Name)) {
 				try {
 					propertyInfo.SetValue(copyTo, propertyInfo.GetValue(copyFrom, null), null);

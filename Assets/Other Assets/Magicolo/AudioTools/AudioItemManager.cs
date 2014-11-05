@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using System.Collections;
 using Magicolo.GeneralTools;
@@ -9,12 +10,13 @@ namespace Magicolo.AudioTools {
 	[System.Serializable]
 	public class AudioItemManager : ITickable {
 		
-		public static List<SingleAudioItem> activeAudioItems = new List<SingleAudioItem>();
-		public static List<SingleAudioItem> inactiveAudioItems = new List<SingleAudioItem>();
+		public static List<SingleAudioItem> activeSingleAudioItems = new List<SingleAudioItem>();
+		public static List<MultipleAudioItem> activeMultipleAudioItems = new List<MultipleAudioItem>();
+		public static List<AudioItem> inactiveAudioItems = new List<AudioItem>();
 		public static List<GameObject> activeAudioObjects = new List<GameObject>();
 		public static List<GameObject> inactiveAudioObjects = new List<GameObject>();
+		public static int idCounter;
 		
-		public int idCounter;
 		public AudioListener listener;
 		public AudioInfoManager infoManager;
 		public Magicolo.AudioTools.Player player;
@@ -28,7 +30,10 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public virtual void Update() {
-			foreach (AudioItem audioItem in activeAudioItems.ToArray()) {
+			foreach (AudioItem audioItem in activeSingleAudioItems.ToArray()) {
+				audioItem.Update();
+			}
+			foreach (AudioItem audioItem in activeMultipleAudioItems.ToArray()) {
 				audioItem.Update();
 			}
 			foreach (AudioItem audioItem in inactiveAudioItems.ToArray()) {
@@ -36,45 +41,48 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
-		public virtual void UpdateVolume() {
-			foreach (SingleAudioItem audioItem in activeAudioItems) {
-				audioItem.SetVolume(audioItem.GetVolume());
-			}
-		}
-		
 		public virtual void Activate(SingleAudioItem audioItem) {
 			inactiveAudioItems.Remove(audioItem);
-			activeAudioItems.Add(audioItem);
+			activeSingleAudioItems.Add(audioItem);
 			activeAudioObjects.Remove(audioItem.gameObject);
 			LimitVoices();
 		}
 		
+		public virtual void Activate(MultipleAudioItem audioItem) {
+			inactiveAudioItems.Remove(audioItem);
+			activeMultipleAudioItems.Add(audioItem);
+		}
+		
 		public virtual void Deactivate(SingleAudioItem audioItem) {
-			activeAudioItems.Remove(audioItem);
+			activeSingleAudioItems.Remove(audioItem);
 			activeAudioObjects.Remove(audioItem.gameObject);
 			inactiveAudioObjects.Add(audioItem.gameObject);
 			audioItem.gameObject.transform.parent = player.transform;
 			audioItem.gameObject.SetActive(false);
+			Resources.UnloadAsset(audioItem.audioSource.clip);
+		}
+		
+		public virtual void Deactivate(MultipleAudioItem audioItem) {
+			activeMultipleAudioItems.Remove(audioItem);
 		}
 		
 		public virtual void SetMasterVolume(float targetVolume, float time) {
 			player.coroutineHolder.RemoveCoroutines("FadeMasterVolume");
-			player.coroutineHolder.AddCoroutine("FadeMasterVolume", FadeMasterVolume(player.generalSettings.masterVolume, targetVolume, time));
+			player.coroutineHolder.AddCoroutine("FadeMasterVolume", FadeMasterVolume(player.generalSettings.MasterVolume, targetVolume, time));
 		}
 		
 		public virtual void SetMasterVolume(float targetVolume) {
 			player.coroutineHolder.RemoveCoroutines("FadeMasterVolume");
-			player.generalSettings.masterVolume = targetVolume;
-			UpdateVolume();
+			player.generalSettings.MasterVolume = targetVolume;
 		}
 		
 		public virtual void LimitVoices() {
-			if (activeAudioItems.Count > player.generalSettings.maxVoices) {
-				foreach (SingleAudioItem audioItem in activeAudioItems.ToArray()) {
+			if (activeSingleAudioItems.Count > player.generalSettings.maxVoices) {
+				foreach (SingleAudioItem audioItem in activeSingleAudioItems.ToArray()) {
 					if (!audioItem.audioInfo.doNotKill) {
 						audioItem.StopImmediate();
 						
-						if (activeAudioItems.Count <= player.generalSettings.maxVoices) {
+						if (activeSingleAudioItems.Count <= player.generalSettings.maxVoices) {
 							break;
 						}
 					}
@@ -101,6 +109,7 @@ namespace Magicolo.AudioTools {
 	
 		public virtual AudioSource SetAudioSource(AudioSource audioSource, AudioInfo audioInfo) {
 			audioSource.Copy(audioInfo.Source);
+			audioSource.clip = audioInfo.Clip;
 			audioSource.volume += Random.Range(-audioInfo.randomVolume, audioInfo.randomVolume);
 			audioSource.pitch += Random.Range(-audioInfo.randomPitch, audioInfo.randomPitch);
 			return audioSource;
@@ -116,13 +125,12 @@ namespace Magicolo.AudioTools {
 			float counter = 0;
 			
 			while (counter < time) {
-				player.generalSettings.masterVolume = (counter / time) * (targetVolume - startVolume) + startVolume;
+				player.generalSettings.MasterVolume = (counter / time) * (targetVolume - startVolume) + startVolume;
 				counter += Time.deltaTime;
-				UpdateVolume();
 				yield return new WaitForSeconds(0);
 			}
 			
-			player.generalSettings.masterVolume = targetVolume;
+			player.generalSettings.MasterVolume = targetVolume;
 		}
 	}
 }

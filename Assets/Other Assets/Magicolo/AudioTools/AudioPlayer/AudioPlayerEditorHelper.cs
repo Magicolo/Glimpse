@@ -9,7 +9,7 @@ namespace Magicolo.AudioTools {
 
 		public AudioPlayer audioPlayer;
 		
-		public void Initialize(AudioPlayer audioPlayer){
+		public void Initialize(AudioPlayer audioPlayer) {
 			this.audioPlayer = audioPlayer;
 			Update();
 		}
@@ -27,7 +27,7 @@ namespace Magicolo.AudioTools {
 			
 			AudioPlayer player = gameObject.GetComponent<AudioPlayer>();
 			if (player != null) {
-				selectionrect.x = width - 40 + gameObject.GetHierarchyDepth() * 14;
+				selectionrect.x = width - 4 + gameObject.GetHierarchyDepth() * 14;
 				GUI.DrawTexture(selectionrect, icon);
 			}
 			#endif

@@ -15,19 +15,11 @@ namespace Magicolo.AudioTools {
 		public override void Update() {
 			base.Update();
 			
-			UpdateAudioItems();
-			
-			if (RemoveStoppedAudioItems() && State != AudioStates.Stopped) {
+			if (RemoveStoppedAudioItems() && State != AudioStates.Stopped && audioItems.Count == 0) {
 				Stop();
 			}
 		}
 
-		public virtual void UpdateAudioItems() {
-			foreach (AudioItem audioItem in audioItems) {
-				audioItem.Update();
-			}
-		}
-		
 		protected override void UpdateVolume() {
 			foreach (AudioItem audioItem in audioItems) {
 				audioItem.SetVolume(Volume);
@@ -45,7 +37,7 @@ namespace Magicolo.AudioTools {
 			
 			foreach (AudioItem audioItem in audioItems.ToArray()) {
 				if (audioItem != null) {
-					if (audioItem.GetState() == AudioStates.Stopped) {
+					if (audioItem.State == AudioStates.Stopped) {
 						audioItems.Remove(audioItem);
 					}
 					else {
@@ -77,13 +69,17 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public virtual void AddAudioItem(AudioItem audioItem) {
+			audioItems = audioItems ?? new List<AudioItem>();
 			audioItems.Add(audioItem);
 			UpdateVolume();
-			UpdatePitch();
 		}
 		
 		public override void Play(params AudioOption[] audioOptions) {
 			if (audioOptions.Length == 0 || !TryAddDelayedAction(AudioAction.ActionTypes.Play, audioOptions)) {
+				if (State == AudioStates.Waiting) {
+					itemManager.Activate(this);
+				}
+				
 				base.Play();
 				
 				foreach (AudioItem audioItem in audioItems) {
@@ -104,6 +100,8 @@ namespace Magicolo.AudioTools {
 
 		public override void Stop(params AudioOption[] audioOptions) {
 			if (audioOptions.Length == 0 || !TryAddDelayedAction(AudioAction.ActionTypes.Stop, audioOptions)) {
+				itemManager.Deactivate(this);
+				
 				base.Stop();
 				
 				foreach (AudioItem audioItem in audioItems) {
@@ -146,5 +144,10 @@ namespace Magicolo.AudioTools {
 			Pitch = targetPitch;
 			UpdatePitch();
 		}
+		
+		public override string ToString() {
+			return string.Format("{0}({1}, {2}, {3}, {4})", GetType().Name, Name, Id, State, Logger.ObjectToString(audioItems));
+		}
+
 	}
 }

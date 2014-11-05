@@ -235,10 +235,7 @@ public class PlayerMove : MonoBehaviour
 		//play landing sound
 		if(groundedCount < 0.25 && groundedCount != 0 && rigidbody.velocity.y < 1)
 		{
-			if (landingSound != null){
-				landingSound.Stop();
-			}
-			landingSound = AudioPlayer.PlayContainer(string.Format("Player_Footstep_{0}_Land", TextureReader.GetMainTextureName()));
+			AudioMaster.PlayPlayerFootstep(AudioMaster.FootstepActions.Land);
 		}
 		
 		//if we press jump in the air, save the time

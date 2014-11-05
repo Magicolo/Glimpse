@@ -2,7 +2,7 @@
 using System.Collections;
 using Magicolo.AudioTools;
 
-// FIXME Update the AudioHierarchyManager only when appropriate instead of on every Update
+// TODO Move the containers to the editorHelper.
 
 [ExecuteInEditMode]
 public class AudioPlayer : Magicolo.AudioTools.Player {
@@ -25,7 +25,6 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	protected override void Awake() {
 		base.Awake();
 		
-		this.SetExecutionOrder(-11);
 		if (Application.isPlaying) {
 			infoManager = new AudioInfoManager(Instance);
 			containerManager = new AudioContainerManager(Instance);
@@ -38,12 +37,10 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 		generalSettings.Initialize(Instance);
 		hierarchyManager = hierarchyManager ?? new AudioHierarchyManager();
 		hierarchyManager.Initialize(Instance);
-	}
-	
-	protected override void OnLevelWasLoaded(int level) {
-		base.OnLevelWasLoaded(level);
 		
-		SingletonCheck(Instance);
+//		foreach (AudioClip audioClip in Resources.FindObjectsOfTypeAll<AudioClip>()) {
+//			Resources.UnloadAsset(audioClip);
+//		}
 	}
 	
 	protected virtual void Start() {
@@ -57,19 +54,29 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 		if (Application.isPlaying) {
 			itemManager.Update();
 		}
-		else {
-			generalSettings.Update();
-			hierarchyManager.Update();
-			editorHelper.Update();
+	}
+	
+	protected override void OnLevelWasLoaded(int level) {
+		base.OnLevelWasLoaded(level);
+		
+		SingletonCheck(Instance);
+	}
+
+	#if UNITY_EDITOR
+	[UnityEditor.Callbacks.DidReloadScripts]
+	static void OnReloadScripts() {
+		if (Instance != null) {
+			Instance.Awake();
 		}
 	}
+	#endif
 	
 	/// <summary>
 	/// Plays an audio source spatialized around the listener.
 	/// </summary>
 	/// <param name="soundName">The name of the sound to be played.</param>
 	/// <returns>The AudioItem that will let you control the audio source.</returns>
-	/// <remarks>This is the non static version of AudioPlayer.Play(soundName) mainly intended for easy integration in animations and UI elements.</remarks>
+	/// <remarks>This is the non static version of AudioPlayer.Play(soundName) mainly intended for easy integration in UI elements.</remarks>
 	public void play(string soundName) {
 		Play(soundName);
 	}
@@ -79,7 +86,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	/// </summary>
 	/// <param name="containerName">The name of the container to be played.</param>
 	/// <returns>The AudioItem that will let you control the container.</returns>
-	/// <remarks>This is the non static version of AudioPlayer.PlayContainer(containerName) mainly intended for easy integration in animations and UI elements.</remarks>
+	/// <remarks>This is the non static version of AudioPlayer.PlayContainer(containerName) mainly intended for easy integration in UI elements.</remarks>
 	public void playContainer(string containerName) {
 		PlayContainer(containerName);
 	}
@@ -131,7 +138,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	/// </summary>
 	/// <returns>The master volume.</returns>
 	public static float GetMasterVolume() {
-		return Instance.generalSettings.masterVolume;
+		return Instance.generalSettings.MasterVolume;
 	}
 	
 	/// <summary>

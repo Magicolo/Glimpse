@@ -15,7 +15,7 @@ namespace Magicolo.AudioTools {
 		string renameName;
 		
 		string currentCategoryName;
-		AudioOptions[] selectedAudioOptions;
+		AudioSetup[] selectedAudioSetups;
 		readonly List<AudioClip> selectedAudioClips = new List<AudioClip>();
 		List<AudioPlayerRenamerCategory> audioClipCategories = new List<AudioPlayerRenamerCategory>();
 		
@@ -222,7 +222,7 @@ namespace Magicolo.AudioTools {
 				}
 			}
 			
-			EditorGUI.BeginDisabledGroup(!renameButtonActive || AudioPlayer == null || audioClipCategories.Count == 0 || selectedAudioOptions == null || selectedAudioOptions.Length == 0 || selectedAudioOptions.All(t => t == null));
+			EditorGUI.BeginDisabledGroup(!renameButtonActive || AudioPlayer == null || audioClipCategories.Count == 0 || selectedAudioSetups == null || selectedAudioSetups.Length == 0 || selectedAudioSetups.All(t => t == null));
 			BuildRenameName();
 			if (LargeButton(new GUIContent("Rename To : " + renameName))) {
 				Rename();
@@ -237,7 +237,7 @@ namespace Magicolo.AudioTools {
 			if (audioClipCategories.Count == 0) {
 				EditorGUILayout.HelpBox("Create at least one category with at least one tag.", MessageType.Warning);
 			}
-			if (selectedAudioOptions == null || selectedAudioOptions.Length == 0 || selectedAudioOptions.All(t => t == null)) {
+			if (selectedAudioSetups == null || selectedAudioSetups.Length == 0 || selectedAudioSetups.All(t => t == null)) {
 				EditorGUILayout.HelpBox("Select a sound object from the AudioPlayer's hierarchy.", MessageType.Warning);
 			}
 		}
@@ -256,18 +256,18 @@ namespace Magicolo.AudioTools {
 		void Rename() {
 			AudioClip[] audioClips = Resources.LoadAll<AudioClip>("");
 			
-			foreach (AudioOptions audioOptions in selectedAudioOptions) {
-				if (audioOptions == null || audioOptions.Source == null || audioOptions.Source.clip == null) {
+			foreach (AudioSetup audioSetup in selectedAudioSetups) {
+				if (audioSetup == null || audioSetup.Source == null || audioSetup.Clip == null) {
 					continue;
 				}
-				AudioClip clip = audioOptions.Source.clip;
+				AudioClip clip = audioSetup.Clip;
 				string clipPath = AssetDatabase.GetAssetPath(clip);
 				string uniqueName = GetUniqueName(clip, renameName, audioClips);
 				if (AssetDatabase.RenameAsset(clipPath, uniqueName) != string.Empty) {
 					Debug.LogError(string.Format("Failed to rename {0} to {1}.", clipPath, uniqueName));
 					continue;
 				}
-				audioOptions.name = uniqueName;
+				audioSetup.name = uniqueName;
 			}
 		}
 
@@ -361,13 +361,13 @@ namespace Magicolo.AudioTools {
 		}
 		
 		void OnSelectionChange() {
-			selectedAudioOptions = Selection.gameObjects != null ? Selection.gameObjects.GetComponents<AudioOptions>() : null;
+			selectedAudioSetups = Selection.gameObjects != null ? Selection.gameObjects.GetComponents<AudioSetup>() : null;
 			
 			selectedAudioClips.Clear();
-			if (selectedAudioOptions != null && selectedAudioOptions.Length > 0) {
-				foreach (AudioOptions audioOptions in selectedAudioOptions) {
-					if (audioOptions != null && audioOptions.Source != null && audioOptions.Source.clip != null && !selectedAudioClips.Contains(audioOptions.Source.clip)) {
-						selectedAudioClips.Add(audioOptions.Source.clip);
+			if (selectedAudioSetups != null && selectedAudioSetups.Length > 0) {
+				foreach (AudioSetup audioSetup in selectedAudioSetups) {
+					if (audioSetup != null && audioSetup.Source != null && audioSetup.Clip != null && !selectedAudioClips.Contains(audioSetup.Clip)) {
+						selectedAudioClips.Add(audioSetup.Clip);
 					}
 				}
 			}

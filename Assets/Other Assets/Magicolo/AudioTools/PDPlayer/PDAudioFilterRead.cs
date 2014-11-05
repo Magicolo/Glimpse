@@ -29,7 +29,7 @@ namespace Magicolo.AudioTools {
 		}
 		
 		void OnApplicationFocus(bool focus){
-			applicationFocused = focus;
+			applicationFocused = focus || Application.isEditor;
 		}
 		
 		void OnAudioFilterRead(float[] data, int channels) {		

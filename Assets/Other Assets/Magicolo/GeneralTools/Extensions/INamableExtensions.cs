@@ -6,6 +6,21 @@ using Magicolo.GeneralTools;
 
 public static class INamableExtensions {
 	
+	public static void Sort(this IList<INamable> namables){
+		Dictionary<string, INamable> namesNamableDict = new Dictionary<string, INamable>();
+		
+		foreach (INamable namable in namables) {
+			namesNamableDict[namable.Name] = namable;
+		}
+		
+		List<string> sortedNames = new List<string>(namesNamableDict.Keys);
+		sortedNames.Sort();
+		
+		for (int i = 0; i < sortedNames.Count; i++) {
+			namables[i] = namesNamableDict[sortedNames[i]];
+		}
+	}
+	
 	public static string GetUniqueName<T>(this INamable namable, string newName, string oldName, IList<T> array) where T : INamable {
 		int suffix = 0;
 		bool uniqueName = false;

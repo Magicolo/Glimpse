@@ -28,7 +28,7 @@ public class AudioOption {
 		Volume,
 		Pitch,
 		DopplerLevel,
-		VolumeRolloff,
+		RolloffMode,
 		MinDistance,
 		PanLevel,
 		Spread,
@@ -57,7 +57,7 @@ public class AudioOption {
 	public static readonly OptionTypes[] IntTypes = { OptionTypes.Priority };
 	public static readonly OptionTypes[] BoolTypes = { OptionTypes.DoNotKill, OptionTypes.Mute, OptionTypes.BypassEffects, OptionTypes.BypassListenerEffects, OptionTypes.BypassReverbZones, OptionTypes.Loop };
 	public static readonly OptionTypes[] CurveTypes = { OptionTypes.FadeInCurve, OptionTypes.FadeOutCurve };
-	public static readonly OptionTypes[] RolloffModeTypes = { OptionTypes.VolumeRolloff };
+	public static readonly OptionTypes[] RolloffModeTypes = { OptionTypes.RolloffMode };
 	public static readonly OptionTypes[] SyncModeTypes = { OptionTypes.SyncMode };
 	public static readonly OptionTypes[] ClipTypes = { OptionTypes.Clip };
 	
@@ -143,8 +143,8 @@ public class AudioOption {
 		return new AudioOption(OptionTypes.DopplerLevel, dopplerLevel);
 	}
 	
-	public static AudioOption VolumeRolloff(AudioRolloffMode volumeRolloff) {
-		return new AudioOption(OptionTypes.VolumeRolloff, volumeRolloff);
+	public static AudioOption RolloffMode(AudioRolloffMode rolloffMode) {
+		return new AudioOption(OptionTypes.RolloffMode, rolloffMode);
 	}
 	
 	public static AudioOption MinDistance(float minDistance) {
