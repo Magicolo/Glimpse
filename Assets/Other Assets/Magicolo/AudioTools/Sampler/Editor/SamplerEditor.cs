@@ -61,9 +61,7 @@ namespace Magicolo.AudioTools {
 		
 				BeginBox();
 		
-				GUIStyle style = new GUIStyle("foldout");
-				style.fontStyle = FontStyle.Bold;
-				if (DeleteFoldOut(instrumentsProperty, i, currentInstrument.Name.ToGUIContent(), style)) {
+				if (DeleteFoldOut(instrumentsProperty, i, currentInstrument.Name.ToGUIContent(), GetStateColorStyle())) {
 					break;
 				}
 		
@@ -211,6 +209,46 @@ namespace Magicolo.AudioTools {
 				currentInstrumentSettings.sources[currentSourceIndex].dropCounter += 1;
 				serializedObject.Update();
 			}
+		}
+	
+		GUIStyle GetStateColorStyle() {
+			GUIStyle style = new GUIStyle("foldout");
+			style.fontStyle = FontStyle.Bold;
+		
+			if (Application.isPlaying) {
+				Color textColor = style.normal.textColor;
+				AudioStates state = currentInstrument.State;
+			
+				switch (state) {
+					case AudioStates.FadingIn:
+						textColor = new Color(1, 1, 0, 1);
+						break;
+					case AudioStates.FadingOut:
+						textColor = new Color(1, 1, 0.5F, 1);
+						break;
+					case AudioStates.Paused:
+						textColor = new Color(0, 0, 1, 1);
+						break;
+					case AudioStates.Playing:
+						textColor = new Color(0, 1, 0, 1);
+						break;
+					case AudioStates.Waiting:
+						textColor = new Color(1, 0, 0, 1);
+						break;
+					case AudioStates.Stopped:
+						textColor = new Color(1, 0, 0, 1);
+						break;
+				}
+			
+				style.normal.textColor = textColor * 0.9F;
+				style.onNormal.textColor = textColor * 0.9F;
+				style.focused.textColor = textColor;
+				style.onFocused.textColor = textColor;
+				style.active.textColor = textColor;
+				style.onActive.textColor = textColor;
+			}
+		
+			return style;
 		}
 	}
 }

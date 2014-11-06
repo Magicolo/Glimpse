@@ -32,14 +32,12 @@ namespace Magicolo.AudioTools {
 		
 		public AudioPlayer audioPlayer;
 		public PDPlayer pdPlayer;
-		public AudioHierarchyEditorHelper editorHelper;
+		public Sampler sampler;
 
 		public void Initialize(AudioPlayer audioPlayer) {
 			this.audioPlayer = audioPlayer;
 			pdPlayer = pdPlayer ?? Object.FindObjectOfType<PDPlayer>();
-			
-			editorHelper = editorHelper ?? new AudioHierarchyEditorHelper();
-			editorHelper.Initialize(audioPlayer);
+			sampler = sampler ?? Object.FindObjectOfType<Sampler>();
 		}
 	}
 }

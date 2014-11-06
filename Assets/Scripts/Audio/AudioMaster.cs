@@ -53,28 +53,24 @@ public class AudioMaster : MonoBehaviour {
 	}
 	
 	public static AudioItem Play(string soundName, GameObject source = null) {
-		return null;
-//		return AudioPlayer.Play(soundName, source);
+		return AudioPlayer.Play(soundName, source);
 	}
 	
 	public static AudioItem PlayContainer(string containerName, GameObject source = null) {
-		return null;
-//		return AudioPlayer.PlayContainer(containerName, source);
+		return AudioPlayer.PlayContainer(containerName, source);
 	}
 	
 	public static AudioItem PlayPlayerFootstep(FootstepActions footstepAction) {
-		return null;
-//		Instance.footstepAction = footstepAction;
-//		
-//		if (currentFootstepSound != null) {
-//			currentFootstepSound.Stop();
-//		}
-//		currentFootstepSound = AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
-//		return currentFootstepSound;
+		Instance.footstepAction = footstepAction;
+		
+		if (currentFootstepSound != null) {
+			currentFootstepSound.Stop();
+		}
+		currentFootstepSound = AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
+		return currentFootstepSound;
 	}
 	
 	public static AudioItem PlayDollUnseenSound(GameObject doll) {
-		return null;
-//		return AudioPlayer.PlayContainer("Doll_Voice_Whisper", doll);
+		return AudioPlayer.PlayContainer("Doll_Voice_Whisper", doll);
 	}
 }

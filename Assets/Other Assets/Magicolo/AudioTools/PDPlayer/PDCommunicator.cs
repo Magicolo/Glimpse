@@ -158,8 +158,11 @@ namespace Magicolo.AudioTools {
 		public bool WriteArray(string arrayName, string soundName) {
 			AudioClip clip = pdPlayer.infoManager.GetAudioInfo(soundName).Clip;
 			float[] data = new float[clip.samples * clip.channels];
+			
 			clip.GetData(data, 0);
-			return WriteArray(arrayName, 0, data, data.Length);
+			bool success = WriteArray(arrayName, 0, data, data.Length);
+			
+			return success;
 		}
 
 		public bool ReadArray(string arrayName, float[] data) {

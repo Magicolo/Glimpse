@@ -9,7 +9,8 @@ namespace Magicolo.AudioTools {
 		
 		public SamplerInstrumentSettings settings;
 		public Sampler sampler;
-		public Dictionary<int, List<SingleAudioItem>> noteDict;
+		
+		Dictionary<int, SingleAudioItem> noteDict;
 
 		public SamplerInstrument(string name, int id, SamplerItemManager itemManager, Sampler sampler)
 			: base(name, id, itemManager, sampler) {
@@ -17,23 +18,37 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public void Initialize(int id, SamplerItemManager itemManager) {
-			this.Id = id;
+			Id = id;
 			this.itemManager = itemManager;
 			audioItems = audioItems ?? new List<AudioItem>();
 			actions = actions ?? new List<AudioAction>();
-			noteDict = new Dictionary<int, List<SingleAudioItem>>();
+			noteDict = new Dictionary<int, SingleAudioItem>();
 			
 			settings.SetReferences();
 		}
-
-		public virtual void AddAudioItem(SingleAudioItem audioItem, int note, float velocity) {
-			audioItems = audioItems ?? new List<AudioItem>();
-			audioItems.Add(audioItem);
+		
+		public override void Update() {
+			base.Update();
 			
-			if (!noteDict.ContainsKey(note)){
-				noteDict[note] = new List<SingleAudioItem>();
+			State = audioItems.Count == 0 ? AudioStates.Stopped : AudioStates.Playing;
+		}
+		
+		public override bool RemoveStoppedAudioItems() {
+			base.RemoveStoppedAudioItems();
+			
+			foreach (int note in new List<int>(noteDict.Keys)) {
+				if (noteDict.ContainsKey(note) && noteDict[note] != null && noteDict[note].State == AudioStates.Stopped) {
+					noteDict.Remove(note);
+				}
 			}
-			noteDict[note].Add(audioItem);
+			return false;
+		}
+		
+		public virtual void AddAudioItem(SingleAudioItem audioItem, int note, float velocity) {
+			base.AddAudioItem(audioItem);
+			
+			Stop(note);
+			noteDict[note] = audioItem;
 			
 			if (settings.generateMode == SamplerInstrumentSettings.GenerateModes.GenerateAtRuntime && settings.destroyIdle && !GetLayer(note, velocity).original) {
 				sampler.coroutineHolder.RemoveCoroutines(Name + note + velocity);
@@ -41,19 +56,21 @@ namespace Magicolo.AudioTools {
 			}
 			
 			if (settings.velocitySettings.affectsVolume) {
-				audioItem.SetVolume(audioItem.GetVolume() * settings.velocitySettings.curve.Evaluate(velocity / 128));
+				audioItem.audioSource.volume *= settings.velocitySettings.curve.Evaluate(velocity / 128);
+			}
+			
+			if (!itemManager.IsActive(this)){
+				itemManager.Activate(this);
 			}
 		}
 		
 		public virtual void Stop(int note) {
-			if (noteDict.ContainsKey(note)){
-				foreach (SingleAudioItem audioItem in noteDict[note]) {
-					audioItem.Stop();
-				}
+			if (noteDict.ContainsKey(note)) {
+				noteDict[note].Stop();
 				noteDict.Remove(note);
 			}
 		}
-		
+
 		public SamplerInstrumentLayer GetLayer(int note, float velocity) {
 			return settings.GetLayer(note, velocity);
 		}

@@ -9,6 +9,7 @@ namespace Magicolo.AudioTools {
 	public class AudioHierarchyManager {
 
 		public string audioClipsPath;
+		public bool firstUpdate = true;
 		
 		public AudioSetup[] audioSetups;
 		public AudioClip[] currentAudioClips;
@@ -25,7 +26,10 @@ namespace Magicolo.AudioTools {
 				FreezeTransforms();
 			}
 			
-			UpdateHierarchy();
+			if (firstUpdate) {
+				UpdateHierarchy();
+				firstUpdate = false;
+			}
 		}
 		
 		public void UpdateHierarchy() {
@@ -33,7 +37,7 @@ namespace Magicolo.AudioTools {
 				return;
 			}
 			
-			if (Application.isPlaying){
+			if (Application.isPlaying) {
 				return;
 			}
 			
@@ -41,7 +45,7 @@ namespace Magicolo.AudioTools {
 			SetCurrentAudioClips();
 			CreateHierarchy();
 			RemoveEmptyFolders();
-			audioPlayer.gameObject.SortChildrenRecursive();
+			audioPlayer.SortChildrenRecursive();
 			FreezeTransforms();
 			CleanUp();
 		}
@@ -66,8 +70,6 @@ namespace Magicolo.AudioTools {
 					AudioSetup audioSetup = child.GetOrAddComponent<AudioSetup>();
 					AudioSource audioSource = audioSetup.GetOrAddComponent<AudioSource>();
 					audioSource.playOnAwake = false;
-					
-//					audioSource.clip = audioClip;
 					
 					audioSetup.audioInfo = new AudioInfo(audioSource, audioSetup, audioPlayer);
 					audioSetup.audioInfo.clipPath = HelperFunctions.GetResourcesPath(audioClip);
@@ -155,16 +157,10 @@ namespace Magicolo.AudioTools {
 		}
 
 		void CleanUp() {
-			foreach (AudioClip audioClip in currentAudioClips) {
-				Resources.UnloadAsset(audioClip);
-			}
-			foreach (AudioClip audioClip in audioClips) {
-				Resources.UnloadAsset(audioClip);
-			}
-			
 			audioSetups = new AudioSetup[0];
 			currentAudioClips = new AudioClip[0];
 			audioClips = new AudioClip[0];
+			Resources.UnloadUnusedAssets();
 		}
 	}
 }

@@ -21,38 +21,38 @@ namespace Magicolo.AudioTools {
 		public AudioItem Play(string instrumentName, int note, float velocity, GameObject source, params AudioOption[] audioOptions) {
 			SamplerInstrument instrument = GetInstrument(instrumentName);
 			
-			if (velocity > 0) {
-				SingleAudioItem audioItem = GetSingleAudioItem(instrument, note, velocity, source);
-				instrument.AddAudioItem(audioItem, note, velocity);
-				instrument.Play(audioOptions);
-				return audioItem;
+			SingleAudioItem audioItem = GetSingleAudioItem(instrument, note, velocity, source);
+			if (audioItem == null) {
+				return instrument;
 			}
-			
-			instrument.Stop(note);
-			return instrument;
+
+			audioItem.Play(audioOptions);
+			return audioItem;
 		}
 
 		public virtual SamplerInstrument GetInstrument(string instrumentName) {
-			return instrumentDict[instrumentName];
+			SamplerInstrument instrument = null;
+			try {
+				instrument = instrumentDict[instrumentName];
+			}
+			catch {
+				Debug.LogError(string.Format("Instrument named {0} was not found.", instrumentName));
+			}
+			return instrument;
 		}
-		
+
 		public virtual SingleAudioItem GetSingleAudioItem(SamplerInstrument instrument, int note, float velocity, GameObject source) {
-			SamplerInstrumentLayer layer = instrument.GetLayer(note, velocity);
-			AudioInfo audioInfo = infoManager.GetAudioInfo(layer.Name);
-			AudioSource audioSource = GetAudioSource(audioInfo, source);
-			audioSource.clip = layer.GetClip();
-			CoroutineHolder coroutineHolder = audioSource.GetOrAddComponent<CoroutineHolder>();
-			GainManager gainManager = audioSource.GetOrAddComponent<GainManager>();
+			if (velocity > 0) {
+				SamplerInstrumentLayer layer = instrument.GetLayer(note, velocity);
+				SingleAudioItem audioItem = GetSingleAudioItem(layer.Name, source);
+				audioItem.audioSource.clip = layer.GetClip();
+				instrument.AddAudioItem(audioItem, note, velocity);
+				return audioItem;
+			}
 			
-			idCounter += 1;
-			SingleAudioItem audioItem = new SingleAudioItem(audioInfo.Name, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, sampler);
-			
-			gainManager.Initialize(source, audioItem, sampler);
-			audioItem.Update();
-			inactiveAudioItems.Add(audioItem);
-			return audioItem;
+			return null;
 		}
-		
+
 		public void BuildInstrumentDict() {
 			instrumentDict = new Dictionary<string, SamplerInstrument>();
 			

@@ -27,7 +27,7 @@ namespace Magicolo.AudioTools {
 			float width = selectionrect.width;
 			selectionrect.width = 30;
 			selectionrect.height = 16;
-			selectionrect.x = width - 3 + gameObject.GetHierarchyDepth() * 14;
+			selectionrect.x = width - 2 + gameObject.GetHierarchyDepth() * 14;
 			selectionrect.height += 1;
 			GUIStyle style = new GUIStyle("MiniToolbarButtonLeft");
 			style.fixedHeight += 1;
@@ -64,6 +64,7 @@ namespace Magicolo.AudioTools {
 						previewAudioSource = audioInfo.Source.PlayOnListener();
 						if (previewAudioSource != null){
 							previewAudioSource.Copy(audioInfo.Source);
+							previewAudioSource.clip = audioInfo.Clip;
 							previewAudioSource.volume += Random.Range(-audioInfo.randomVolume, audioInfo.randomVolume);
 							previewAudioSource.pitch += Random.Range(-audioInfo.randomPitch, audioInfo.randomPitch);
 							routine = DestroyAfterPlaying(previewAudioSource);
@@ -92,15 +93,7 @@ namespace Magicolo.AudioTools {
 				audioPlayer.hierarchyManager.UpdateHierarchy();
 			}
 		}
-		
-//		public override void OnSelectionChanged() {
-//			base.OnSelectionChanged();
-//			
-//			if (selection.Length == 1 && selection[0] is GameObject && ((GameObject)selection[0]).GetComponent<AudioPlayer>() != null) {
-//				audioPlayer.hierarchyManager.UpdateHierarchy();
-//			}
-//		}
-		
+
 		public override void OnUpdate() {
 			if (routine != null && !routine.MoveNext()) {
 				routine = null;
@@ -108,10 +101,12 @@ namespace Magicolo.AudioTools {
 		}
 		
 		IEnumerator DestroyAfterPlaying(AudioSource audioSource) {
-			while (audioSource.isPlaying) {
+			while (audioSource != null && audioSource.isPlaying) {
 				yield return null;
 			}
-			audioSource.gameObject.Remove();
+			if (audioSource != null) {
+				audioSource.gameObject.Remove();
+			}
 		}
 	}
 }

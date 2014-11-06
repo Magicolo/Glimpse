@@ -12,7 +12,7 @@ namespace Magicolo.AudioTools {
 		
 		public GenerateModes generateMode = GenerateModes.GenerateAtRuntime;
 		public bool destroyIdle = true;
-		[Min] public float idleThreshold = 5;
+		[Min] public float idleThreshold = 3;
 		public bool is3D = true;
 		public SamplerVelocitySettings velocitySettings = new SamplerVelocitySettings();
 		public SamplerInstrumentSource[] sources = new SamplerInstrumentSource[128];

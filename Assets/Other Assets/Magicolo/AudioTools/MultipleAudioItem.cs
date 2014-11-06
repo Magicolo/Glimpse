@@ -12,8 +12,8 @@ namespace Magicolo.AudioTools {
 			: base(name, id, itemManager, player) {
 		}
 		
-		public override void Update() {
-			base.Update();
+		public virtual void Update() {
+			UpdateActions();
 			
 			if (RemoveStoppedAudioItems() && State != AudioStates.Stopped && audioItems.Count == 0) {
 				Stop();
@@ -59,7 +59,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			if (syncMode == SyncMode.None) {
-				actions.Add(new AudioDelayedAction(delay, actionType, this, audioOptions));
+				actions.Add(new AudioDelayedAction(delay, player.metronome, actionType, this, audioOptions));
 			}
 			else {
 				actions.Add(new AudioSyncedDelayedAction(delay, syncMode, player.metronome, actionType, this, audioOptions));

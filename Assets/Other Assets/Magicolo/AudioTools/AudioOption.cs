@@ -235,4 +235,9 @@ public class AudioOption {
 			curveValue = new AnimationCurve(new []{ new Keyframe(0, 1), new Keyframe(1, 0) });
 		}
 	}
+	
+	public override string ToString() {
+		return string.Format("AudioOption({0}, {1})", type, GetValue());
+	}
+
 }

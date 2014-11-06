@@ -13,7 +13,13 @@ public class TextureReader : MonoBehaviour {
 		{ 1, AudioMaster.FootstepSurfaces.Grass },
 		{ 2, AudioMaster.FootstepSurfaces.Stone },
 		{ 3, AudioMaster.FootstepSurfaces.Dirt },
-		{ 4, AudioMaster.FootstepSurfaces.Stone }
+		{ 4, AudioMaster.FootstepSurfaces.Stone },
+		{ 5, AudioMaster.FootstepSurfaces.Dirt },
+		{ 6, AudioMaster.FootstepSurfaces.Dirt },
+		{ 7, AudioMaster.FootstepSurfaces.Grass },
+		{ 8, AudioMaster.FootstepSurfaces.Dirt },
+		{ 9, AudioMaster.FootstepSurfaces.Stone },
+		{ 10, AudioMaster.FootstepSurfaces.Dirt }
 	};
 	
 	static TextureReader instance;

@@ -94,7 +94,7 @@ namespace Magicolo.AudioTools {
 				pdPlayer.editorHelper.modules.Add(new PDEditorModule(module, pdPlayer));
 				
 				module.Update();
-				inactiveAudioItems.Add(module);
+				inactiveMultipleAudioItems.Add(module);
 			}
 			return module;
 		}
@@ -110,7 +110,7 @@ namespace Magicolo.AudioTools {
 			
 			gainManager.Initialize(source, audioItem, pdPlayer);
 			audioItem.Update();
-			inactiveAudioItems.Add(audioItem);
+			inactiveSingleAudioItems.Add(audioItem);
 			return audioItem;
 		}
 		
@@ -187,7 +187,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			mixAudioItem.Update();
-			inactiveAudioItems.Add(mixAudioItem);
+			inactiveMultipleAudioItems.Add(mixAudioItem);
 			return mixAudioItem;
 		}
 		
@@ -214,7 +214,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			randomAudioItem.Update();
-			inactiveAudioItems.Add(randomAudioItem);
+			inactiveMultipleAudioItems.Add(randomAudioItem);
 			return randomAudioItem;
 		}
 		
@@ -248,7 +248,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			switchAudioItem.Update();
-			inactiveAudioItems.Add(switchAudioItem);
+			inactiveMultipleAudioItems.Add(switchAudioItem);
 			return switchAudioItem;
 		}
 	}

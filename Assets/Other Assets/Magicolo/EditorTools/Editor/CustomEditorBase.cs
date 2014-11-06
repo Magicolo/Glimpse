@@ -471,6 +471,16 @@ namespace Magicolo.EditorTools {
 			MinMaxSlider(minProperty, maxProperty, min, max, false);
 		}
 		
+		public string Popup(GUIContent label, string currentOption, string[] displayedOptions, GUIStyle style, params GUILayoutOption[] options){
+			style = style ?? new GUIStyle("popup");
+			int currentIndex = System.Array.IndexOf(displayedOptions, currentOption);
+			return displayedOptions[Mathf.Clamp(EditorGUILayout.Popup(label, currentIndex, displayedOptions.ToGUIContents(), style, options), 0, Mathf.Max(displayedOptions.Length - 1, 0))];
+		}
+				
+		public string Popup(GUIContent label, string currentOption, string[] displayedOptions, params GUILayoutOption[] options){
+			return Popup(label, currentOption, displayedOptions, null, options);
+		}
+		
 		public void DropArea<T>(Rect dropArea, bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
 			if (Application.isPlaying && disableOnPlay) {
 				return;

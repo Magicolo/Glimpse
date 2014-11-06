@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Magicolo.AudioTools;
+using Magicolo.GeneralTools;
 
 namespace Magicolo.AudioTools {
 	[System.Serializable]
-	public abstract class AudioAction {
+	public abstract class AudioAction : ITickable {
 
 		public enum ActionTypes {
 			Play,
@@ -13,14 +15,18 @@ namespace Magicolo.AudioTools {
 		
 		public bool isApplied;
 		
+		public Metronome metronome;
 		public ActionTypes type;
 		public AudioItem audioItem;
 		public AudioOption[] audioOptions;
 		
-		protected AudioAction(AudioAction.ActionTypes type, AudioItem audioItem, params AudioOption[] audioOptions) {
+		protected AudioAction(Metronome metronome, AudioAction.ActionTypes type, AudioItem audioItem, params AudioOption[] audioOptions) {
+			this.metronome = metronome;
 			this.type = type;
 			this.audioItem = audioItem;
 			this.audioOptions = audioOptions;
+			
+			metronome.Subscribe(this);
 		}
 		
 		public abstract void Update();
@@ -42,6 +48,16 @@ namespace Magicolo.AudioTools {
 					break;
 			}
 			isApplied = true;
+			metronome.Unsubscribe(this);
+		}
+		
+		public virtual void TickEvent() {
+		}
+
+		public virtual void BeatEvent(int currentBeat) {
+		}
+
+		public virtual void MeasureEvent(int currentMeasure) {
 		}
 	}
 }

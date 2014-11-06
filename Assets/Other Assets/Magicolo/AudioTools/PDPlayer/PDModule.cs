@@ -37,6 +37,7 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public override void Update() {
+			UpdateActions();
 			RemoveStoppedAudioItems();
 			
 			if (State == AudioStates.Playing) {

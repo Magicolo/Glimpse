@@ -87,19 +87,18 @@ public abstract class AudioItem : INamable {
 		this.player = player;
 	}
 	
-	public virtual void Update() {
+	protected virtual void UpdateActions() {
 		foreach (AudioAction action in actions.ToArray()) {
 			if (action == null) {
 				continue;
 			}
 			
-			action.Update();
 			if (action.isApplied) {
 				actions.Remove(action);
 			}
 		}
 	}
-		
+	
 	protected abstract void UpdateVolume();
 		
 	protected abstract void UpdatePitch();

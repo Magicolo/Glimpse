@@ -158,12 +158,21 @@ namespace Magicolo.AudioTools {
 		
 		void Tick() {
 			if (isPlaying) {
+				TickEvent();
 				ticker.MoveNext();
 			}
 		}
 		
+		void TickEvent() {
+			foreach (ITickable tickable in tickables.ToArray()) {
+				if (tickable != null) {
+					tickable.TickEvent();
+				}
+			}
+		}
+		
 		void BeatEvent() {
-			foreach (ITickable tickable in tickables) {
+			foreach (ITickable tickable in tickables.ToArray()) {
 				if (tickable != null) {
 					tickable.BeatEvent(CurrentBeat);
 				}
@@ -171,7 +180,7 @@ namespace Magicolo.AudioTools {
 		}
 
 		void MeasureEvent() {
-			foreach (ITickable tickable in tickables) {
+			foreach (ITickable tickable in tickables.ToArray()) {
 				if (tickable != null) {
 					tickable.MeasureEvent(CurrentMeasure);
 				}

@@ -48,7 +48,7 @@ namespace Magicolo.AudioTools {
 		
 		public override void OnHierarchyWindowItemGUI(int instanceid, Rect selectionrect) {
 			#if UNITY_EDITOR
-			icon = icon ?? HelperFunctions.LoadAssetInFolder<Texture>("pd.png", "PDPlayer");
+			icon = icon ?? HelperFunctions.LoadAssetInFolder<Texture>("pd.png", "Magicolo/AudioTools/PDPlayer");
 			GameObject gameObject = UnityEditor.EditorUtility.InstanceIDToObject(instanceid) as GameObject;
 			
 			if (gameObject == null || icon == null) return;

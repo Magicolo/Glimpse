@@ -4,15 +4,14 @@ using UnityEngine;
 using System.Collections;
 using Magicolo.GeneralTools;
 
-// TODO Add tempo sync events
-
 namespace Magicolo.AudioTools {
 	[System.Serializable]
-	public class AudioItemManager : ITickable {
+	public class AudioItemManager {
 		
 		public static List<SingleAudioItem> activeSingleAudioItems = new List<SingleAudioItem>();
 		public static List<MultipleAudioItem> activeMultipleAudioItems = new List<MultipleAudioItem>();
-		public static List<AudioItem> inactiveAudioItems = new List<AudioItem>();
+		public static List<SingleAudioItem> inactiveSingleAudioItems = new List<SingleAudioItem>();
+		public static List<MultipleAudioItem> inactiveMultipleAudioItems = new List<MultipleAudioItem>();
 		public static List<GameObject> activeAudioObjects = new List<GameObject>();
 		public static List<GameObject> inactiveAudioObjects = new List<GameObject>();
 		public static int idCounter;
@@ -25,45 +24,60 @@ namespace Magicolo.AudioTools {
 			this.listener = listener;
 			this.infoManager = infoManager;
 			this.player = player;
-			
-			player.metronome.Subscribe(this);
 		}
 		
 		public virtual void Update() {
-			foreach (AudioItem audioItem in activeSingleAudioItems.ToArray()) {
+			foreach (SingleAudioItem audioItem in activeSingleAudioItems.ToArray()) {
 				audioItem.Update();
 			}
-			foreach (AudioItem audioItem in activeMultipleAudioItems.ToArray()) {
+			foreach (MultipleAudioItem audioItem in activeMultipleAudioItems.ToArray()) {
 				audioItem.Update();
 			}
-			foreach (AudioItem audioItem in inactiveAudioItems.ToArray()) {
+			foreach (SingleAudioItem audioItem in inactiveSingleAudioItems.ToArray()) {
+				audioItem.Update();
+			}
+			foreach (MultipleAudioItem audioItem in inactiveMultipleAudioItems.ToArray()) {
 				audioItem.Update();
 			}
 		}
 		
 		public virtual void Activate(SingleAudioItem audioItem) {
-			inactiveAudioItems.Remove(audioItem);
+			inactiveSingleAudioItems.Remove(audioItem);
 			activeSingleAudioItems.Add(audioItem);
 			activeAudioObjects.Remove(audioItem.gameObject);
 			LimitVoices();
 		}
 		
 		public virtual void Activate(MultipleAudioItem audioItem) {
-			inactiveAudioItems.Remove(audioItem);
+			inactiveMultipleAudioItems.Remove(audioItem);
 			activeMultipleAudioItems.Add(audioItem);
+		}
+
+		public bool IsActive(SingleAudioItem audioItem) {
+			return activeSingleAudioItems.Contains(audioItem);
+		}
+		
+		public bool IsActive(MultipleAudioItem audioItem) {
+			return activeMultipleAudioItems.Contains(audioItem);
+		}
+		
+		public bool IsActive(GameObject gameObject) {
+			return activeAudioObjects.Contains(gameObject);
 		}
 		
 		public virtual void Deactivate(SingleAudioItem audioItem) {
 			activeSingleAudioItems.Remove(audioItem);
 			activeAudioObjects.Remove(audioItem.gameObject);
+			inactiveSingleAudioItems.Remove(audioItem);
 			inactiveAudioObjects.Add(audioItem.gameObject);
 			audioItem.gameObject.transform.parent = player.transform;
 			audioItem.gameObject.SetActive(false);
-			Resources.UnloadAsset(audioItem.audioSource.clip);
+			audioItem.audioSource.clip = null;
 		}
 		
 		public virtual void Deactivate(MultipleAudioItem audioItem) {
 			activeMultipleAudioItems.Remove(audioItem);
+			inactiveMultipleAudioItems.Remove(audioItem);
 		}
 		
 		public virtual void SetMasterVolume(float targetVolume, float time) {
@@ -89,12 +103,35 @@ namespace Magicolo.AudioTools {
 				}
 			}
 		}
-		
+				
+		public virtual SingleAudioItem GetSingleAudioItem(string soundName, GameObject source) {
+			AudioInfo audioInfo = infoManager.GetAudioInfo(soundName);
+			AudioSource audioSource = GetAudioSource(audioInfo, source);
+			CoroutineHolder coroutineHolder = audioSource.GetOrAddComponent<CoroutineHolder>();
+			GainManager gainManager = audioSource.GetOrAddComponent<GainManager>();
+			
+			idCounter += 1;
+			SingleAudioItem audioItem = new SingleAudioItem(audioInfo.Name, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, player);
+			
+			gainManager.Initialize(source, audioItem, player);
+			audioItem.Update();
+			inactiveSingleAudioItems.Add(audioItem);
+			return audioItem;
+		}
+			
 		public virtual AudioSource GetAudioSource(AudioInfo audioInfo, GameObject source) {
 			GameObject gameObject = GetGameObject(source);
 			return SetAudioSource(gameObject.GetOrAddComponent<AudioSource>(), audioInfo);
 		}
 		
+		public virtual AudioSource SetAudioSource(AudioSource audioSource, AudioInfo audioInfo) {
+			audioSource.Copy(audioInfo.Source);
+			audioSource.clip = audioInfo.Clip;
+			audioSource.volume += Random.Range(-audioInfo.randomVolume, audioInfo.randomVolume);
+			audioSource.pitch += Random.Range(-audioInfo.randomPitch, audioInfo.randomPitch);
+			return audioSource;
+		}
+	
 		public virtual GameObject GetGameObject(GameObject source) {
 			GameObject gameObject;
 			
@@ -106,21 +143,7 @@ namespace Magicolo.AudioTools {
 			
 			return gameObject;
 		}
-	
-		public virtual AudioSource SetAudioSource(AudioSource audioSource, AudioInfo audioInfo) {
-			audioSource.Copy(audioInfo.Source);
-			audioSource.clip = audioInfo.Clip;
-			audioSource.volume += Random.Range(-audioInfo.randomVolume, audioInfo.randomVolume);
-			audioSource.pitch += Random.Range(-audioInfo.randomPitch, audioInfo.randomPitch);
-			return audioSource;
-		}
-	
-		public virtual void BeatEvent(int currentBeat) {
-		}
 
-		public virtual void MeasureEvent(int currentMeasure) {
-		}
-		
 		public virtual IEnumerator FadeMasterVolume(float startVolume, float targetVolume, float time) {
 			float counter = 0;
 			

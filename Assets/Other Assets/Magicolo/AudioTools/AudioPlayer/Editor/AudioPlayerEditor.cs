@@ -12,6 +12,8 @@ namespace Magicolo.AudioTools {
 	public class AudioPlayerEditor : CustomEditorBase {
 		
 		AudioPlayer audioPlayer;
+		PDPlayer pdPlayer;
+		Sampler sampler;
 		AudioGeneralSettings generalSettings;
 		SerializedProperty generalSettingsProperty;
 		
@@ -24,6 +26,7 @@ namespace Magicolo.AudioTools {
 		SerializedProperty currentSubContainerProperty;
 		AudioOption currentAudioOption;
 		SerializedProperty currentAudioOptionProperty;
+		AudioClip currentClip;
 		
 		Texture pdIcon;
 		Texture samplerIcon;
@@ -36,6 +39,8 @@ namespace Magicolo.AudioTools {
 		
 		public override void OnInspectorGUI() {
 			audioPlayer = (AudioPlayer)target;
+			pdPlayer = FindObjectOfType<PDPlayer>();
+			sampler = FindObjectOfType<Sampler>();
 			generalSettings = audioPlayer.generalSettings;
 			generalSettingsProperty = serializedObject.FindProperty("generalSettings");
 			
@@ -108,10 +113,7 @@ namespace Magicolo.AudioTools {
 					ShowEnums(currentContainerProperty);
 				}
 				
-				if (AddFoldOut<AudioSetup>(subContainersProperty, "Sources".ToGUIContent(), currentContainer.childrenIds.Count, OnContainerSourceDropped)) {
-					currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, 0);
-					serializedObject.Update();
-				}
+				ShowSources();
 				
 				if (subContainersProperty.isExpanded) {
 					EditorGUI.indentLevel += 1;
@@ -129,6 +131,18 @@ namespace Magicolo.AudioTools {
 			}
 		}
 
+		void ShowSources() {
+			if (AddFoldOut<AudioSetup>(subContainersProperty, "Sources".ToGUIContent(), currentContainer.childrenIds.Count, OnContainerSourceDropped)) {
+				if (currentContainer.childrenIds.Count > 0) {
+					currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, 0, currentContainer.GetSubContainerWithID(currentContainer.childrenIds.Last()));
+				}
+				else {
+					currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, 0);
+				}
+				serializedObject.Update();
+			}
+		}
+		
 		void OnContainerSourceDropped(AudioSetup droppedObject) {
 			AddToArray(subContainersProperty);
 			currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, 0, droppedObject);
@@ -221,20 +235,36 @@ namespace Magicolo.AudioTools {
 				
 				ShowGeneralContainerSettings();
 				
-				switch (currentSubContainer.type) {
-					case AudioSubContainer.Types.AudioSource:
-						ShowAudioSource();
-						break;
-					case AudioSubContainer.Types.MixContainer:
-						ShowMixContainer();
-						break;
-					case AudioSubContainer.Types.RandomContainer:
-						ShowRandomContainer();
-						break;
-					case AudioSubContainer.Types.SwitchContainer:
-						ShowSwitchContainer();
-						break;
+				if (currentSubContainer.IsSource) {
+					switch (currentSubContainer.type) {
+						case AudioSubContainer.Types.AudioSource:
+							ShowAudioSource();
+							break;
+						case AudioSubContainer.Types.Sampler:
+							ShowSampler();
+							break;
+					}
 				}
+				else {
+					BeginBox();
+					
+					switch (currentSubContainer.type) {
+						case AudioSubContainer.Types.MixContainer:
+							ShowMixContainer();
+							break;
+						case AudioSubContainer.Types.RandomContainer:
+							ShowRandomContainer();
+							break;
+						case AudioSubContainer.Types.SwitchContainer:
+							ShowSwitchContainer();
+							break;
+					}
+					
+					EndBox();
+			
+					Separator();
+				}
+				
 				
 				EditorGUI.indentLevel -= 1;
 			}
@@ -243,18 +273,37 @@ namespace Magicolo.AudioTools {
 		void ShowAudioSource() {
 			currentSubContainer.AudioSetup = EditorGUILayout.ObjectField("Source".ToGUIContent(), currentSubContainer.AudioSetup, typeof(AudioSetup), true) as AudioSetup;
 			
-			if (currentSubContainer.AudioSetup != null && currentSubContainer.AudioSetup.audioInfo != null && currentSubContainer.AudioSetup.audioInfo.Source != null && currentSubContainer.AudioSetup.audioInfo.Clip != null) {
+			currentClip = currentSubContainer.AudioSetup == null ? null : currentSubContainer.AudioSetup.audioInfo.Clip;
+			
+			if (currentSubContainer.AudioSetup != null && currentSubContainer.AudioSetup.audioInfo != null && currentSubContainer.AudioSetup.audioInfo.Source != null && currentClip != null) {
+				ShowAudioOptions();
+			}
+		}
+
+		void ShowSampler() {
+			if (sampler == null) {
+				EditorGUILayout.HelpBox("No sampler was found in the scene.", MessageType.Warning);
+				return;
+			}
+			
+			if (sampler.editorHelper.instruments.Length <= 0) {
+				EditorGUILayout.HelpBox("There needs to be at least one instrument in the sampler.", MessageType.Warning);
+				return;
+			}
+			
+			currentSubContainer.instrumentName = Popup("Instrument".ToGUIContent(), currentSubContainer.instrumentName, sampler.editorHelper.GetInstrumentNames());
+			SamplerInstrument instrument = sampler.editorHelper.GetInstrument(currentSubContainer.instrumentName);
+			
+			if (instrument != null) {
+				currentSubContainer.note = EditorGUILayout.IntSlider("Note".ToGUIContent(), currentSubContainer.note, instrument.settings.minNote, instrument.settings.maxNote);
+				currentSubContainer.velocity = EditorGUILayout.Slider("Velocity".ToGUIContent(), currentSubContainer.velocity, 0, 127);
+				
 				ShowAudioOptions();
 			}
 		}
 
 		void ShowMixContainer() {
-			BeginBox();
-			
-			if (AddFoldOut<AudioSetup>(subContainersProperty, currentSubContainer, "Sources".ToGUIContent(), currentSubContainer.childrenIds.Count, OnSubContainerSourceDropped)) {
-				currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, currentSubContainer.id);
-				serializedObject.Update();
-			}
+			ShowSubSources();
 			
 			if (currentSubContainer.Showing && currentContainer.childrenIds.Count > 0) {
 				EditorGUI.indentLevel += 1;
@@ -263,19 +312,10 @@ namespace Magicolo.AudioTools {
 				
 				EditorGUI.indentLevel -= 1;
 			}
-			
-			EndBox();
-			
-			Separator();
 		}
 
 		void ShowRandomContainer() {
-			BeginBox();
-			
-			if (AddFoldOut<AudioSetup>(subContainersProperty, currentSubContainer, "Sources".ToGUIContent(), currentSubContainer.childrenIds.Count, OnSubContainerSourceDropped)) {
-				currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, currentSubContainer.id);
-				serializedObject.Update();
-			}
+			ShowSubSources();
 			
 			if (currentSubContainer.Showing && currentContainer.childrenIds.Count > 0) {
 				EditorGUI.indentLevel += 1;
@@ -284,19 +324,12 @@ namespace Magicolo.AudioTools {
 				
 				EditorGUI.indentLevel -= 1;
 			}
-			
-			EndBox();
 		}
 		
 		void ShowSwitchContainer() {
-			BeginBox();
-			
 			ShowEnums(currentSubContainerProperty);
 			
-			if (AddFoldOut<AudioSetup>(subContainersProperty, currentSubContainer, "Sources".ToGUIContent(), currentSubContainer.childrenIds.Count, OnSubContainerSourceDropped)) {
-				currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, currentSubContainer.id);
-				serializedObject.Update();
-			}
+			ShowSubSources();
 			
 			if (currentSubContainer.Showing && currentContainer.childrenIds.Count > 0) {
 				EditorGUI.indentLevel += 1;
@@ -305,8 +338,6 @@ namespace Magicolo.AudioTools {
 				
 				EditorGUI.indentLevel -= 1;
 			}
-			
-			EndBox();
 		}
 		
 		void OnSubContainerSourceDropped(AudioSetup droppedObject) {
@@ -386,19 +417,19 @@ namespace Magicolo.AudioTools {
 				
 				// Float fields
 				if (currentAudioOption.type == AudioOption.OptionTypes.FadeIn) {
-					currentAudioOption.SetValue(Mathf.Clamp(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0, currentSubContainer.AudioSetup.audioInfo.Clip.length - currentSubContainer.AudioSetup.audioInfo.fadeOut));
+					currentAudioOption.SetValue(Mathf.Max(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0));
 				}
 				else if (currentAudioOption.type == AudioOption.OptionTypes.FadeOut) {
-					currentAudioOption.SetValue(Mathf.Clamp(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0, currentSubContainer.AudioSetup.audioInfo.Clip.length - currentSubContainer.AudioSetup.audioInfo.fadeIn));
+					currentAudioOption.SetValue(Mathf.Max(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0));
 				}
 				else if (currentAudioOption.type == AudioOption.OptionTypes.Delay) {
 					currentAudioOption.SetValue(Mathf.Max(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0));
 				}
 				else if (currentAudioOption.type == AudioOption.OptionTypes.MinDistance) {
-					currentAudioOption.SetValue(Mathf.Clamp(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0, currentSubContainer.AudioSetup.audioInfo.Source.maxDistance));
+					currentAudioOption.SetValue(Mathf.Max(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0));
 				}
 				else if (currentAudioOption.type == AudioOption.OptionTypes.MaxDistance) {
-					currentAudioOption.SetValue(Mathf.Max(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), currentSubContainer.AudioSetup.audioInfo.Source.minDistance + currentSubContainer.AudioSetup.audioInfo.Source.minDistance / 10));
+					currentAudioOption.SetValue(Mathf.Max(EditorGUILayout.FloatField("Value".ToGUIContent(), currentAudioOption.GetValue<float>()), 0));
 				}
 				// Slider fields
 				else if (currentAudioOption.type == AudioOption.OptionTypes.Volume || currentAudioOption.type == AudioOption.OptionTypes.RandomVolume || currentAudioOption.type == AudioOption.OptionTypes.PanLevel) {
@@ -470,10 +501,19 @@ namespace Magicolo.AudioTools {
 			curve.MoveKey(curve.keys.Length - 1, new Keyframe(1, 0));
 		}
 		
+		void ShowSubSources() {
+			if (AddFoldOut<AudioSetup>(subContainersProperty, currentSubContainer, "Sources".ToGUIContent(), currentSubContainer.childrenIds.Count, OnSubContainerSourceDropped)) {
+				if (currentSubContainer.childrenIds.Count > 0) {
+					currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, currentSubContainer.id, currentContainer.GetSubContainerWithID(currentSubContainer.childrenIds.Last()));
+				}
+				else {
+					currentContainer.subContainers[currentContainer.subContainers.Count - 1] = new AudioSubContainer(currentContainer, currentSubContainer.id);
+				}
+				serializedObject.Update();
+			}
+		}
+		
 		void ShowButtons() {
-			PDPlayer pdPlayer = FindObjectOfType<PDPlayer>();
-			Sampler sampler = FindObjectOfType<Sampler>();
-			
 			if (pdPlayer != null && sampler != null) {
 				return;
 			}
@@ -505,6 +545,14 @@ namespace Magicolo.AudioTools {
 						AdjustName("Audio Source: " + currentSubContainer.AudioSetup.name, currentSubContainer, currentContainer);
 					}
 					break;
+				case AudioSubContainer.Types.Sampler:
+					if (sampler == null || sampler.editorHelper.instruments.Length == 0 || string.IsNullOrEmpty(currentSubContainer.instrumentName)) {
+						AdjustName("Sampler: null", currentSubContainer, currentContainer);
+					}
+					else {
+						AdjustName(string.Format("Sampler: {0} ({1} : {2})", currentSubContainer.instrumentName, currentSubContainer.note, currentSubContainer.velocity), currentSubContainer, currentContainer);
+					}
+					break;
 				case AudioSubContainer.Types.MixContainer:
 					AdjustName("Mix Container", currentSubContainer, currentContainer);
 					break;
@@ -531,14 +579,18 @@ namespace Magicolo.AudioTools {
 				subContainer.Name += " | State: " + subContainer.stateName;
 			}
 		}
-	
+		
 		GUIStyle GetContainerStyle(AudioSubContainer.Types type) {
 			GUIStyle style = new GUIStyle("foldout");
+			style.fontStyle = FontStyle.Bold;
 			Color textColor = style.normal.textColor;
 			
 			switch (type) {
 				case AudioSubContainer.Types.AudioSource:
 					textColor = new Color(1, 0.5F, 0.3F, 10);
+					break;
+				case AudioSubContainer.Types.Sampler:
+					textColor = new Color(1, 0, 1, 10);
 					break;
 				case AudioSubContainer.Types.MixContainer:
 					textColor = new Color(0, 1, 1, 10);
@@ -551,12 +603,12 @@ namespace Magicolo.AudioTools {
 					break;
 			}
 			
-			style.normal.textColor = textColor * 0.9F;
-			style.onNormal.textColor = textColor * 0.9F;
-			style.focused.textColor = textColor;
-			style.onFocused.textColor = textColor;
-			style.active.textColor = textColor;
-			style.onActive.textColor = textColor;
+			style.normal.textColor = textColor * 0.7F;
+			style.onNormal.textColor = textColor * 0.7F;
+			style.focused.textColor = textColor * 0.85F;
+			style.onFocused.textColor = textColor * 0.85F;
+			style.active.textColor = textColor * 0.85F;
+			style.onActive.textColor = textColor * 0.85F;
 			
 			return style;
 		}

@@ -32,8 +32,7 @@ namespace Magicolo.AudioTools {
 
 		public AudioClip Clip {
 			get {
-				Source.clip = Resources.Load<AudioClip>(clipPath);
-				return Source.clip;
+				return Resources.Load<AudioClip>(clipPath);
 			}
 		}
 		

@@ -9,6 +9,7 @@ namespace Magicolo.AudioTools {
 
 		public enum Types {
 			AudioSource,
+			Sampler,
 			MixContainer,
 			RandomContainer,
 			SwitchContainer
@@ -38,22 +39,19 @@ namespace Magicolo.AudioTools {
 		
 		public bool IsSource {
 			get {
-				return type == Types.AudioSource;
+				return type == Types.AudioSource || type == Types.Sampler;
 			}
 		}
 		
 		public bool IsContainer {
 			get {
-				return type != Types.AudioSource;
+				return type == Types.MixContainer || type == Types.RandomContainer || type == Types.SwitchContainer;
 			}
 		}
 		
 		public Types type;
-		[Min(0)] public float weight = 1;
-		public Object stateHolder;
-		public string statePath;
-		public string stateName;
 		
+		// Audio Source
 		[SerializeField]
 		AudioSetup audioSetup;
 		public AudioSetup AudioSetup {
@@ -70,8 +68,21 @@ namespace Magicolo.AudioTools {
 				}
 			}
 		}
-		
 		public AudioInfo audioInfo;
+		
+		// Sampler
+		public string instrumentName;
+		public int note = 60;
+		public float velocity = 100;
+		
+		// Random Container
+		[Min(0)] public float weight = 1;
+		
+		// Switch Container
+		public Object stateHolder;
+		public string statePath;
+		public string stateName;
+		
 		public AudioOption[] audioOptions;
 		
 		public int id;
@@ -79,12 +90,11 @@ namespace Magicolo.AudioTools {
 		public List<int> childrenIds = new List<int>();
 		
 		public AudioSubContainer(AudioContainer container, int parentId, AudioSubContainer subContainer) {
+			this.Copy(subContainer, "id", "parentId", "childrenIds");
+			
 			this.name = container.Name;
 			this.id = container.GetUniqueID();
 			this.parentId = parentId;
-			
-			type = subContainer.type;
-			weight = subContainer.weight;
 			
 			if (parentId == 0) {
 				container.childrenIds.Add(id);

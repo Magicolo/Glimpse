@@ -15,10 +15,28 @@ namespace Magicolo.AudioTools {
 			this.sampler = sampler;
 			Update();
 		}
-
+			
+		public virtual string[] GetInstrumentNames() {
+			string[] names = new string[sampler.editorHelper.instruments.Length];
+			
+			for (int i = 0; i < names.Length; i++) {
+				names[i] = sampler.editorHelper.instruments[i].Name;
+			}
+			return names;
+		}
+		
+		public virtual SamplerInstrument GetInstrument(string instrumentName) {
+			foreach (SamplerInstrument instrument in sampler.editorHelper.instruments) {
+				if (instrument.Name == instrumentName) {
+					return instrument;
+				}
+			}
+			return null;
+		}
+		
 		public override void OnHierarchyWindowItemGUI(int instanceid, Rect selectionrect) {
 			#if UNITY_EDITOR
-			icon = icon ?? HelperFunctions.LoadAssetInFolder<Texture>("sampler.png", "Sampler");
+			icon = icon ?? HelperFunctions.LoadAssetInFolder<Texture>("sampler.png", "Magicolo/AudioTools/Sampler");
 			GameObject gameObject = UnityEditor.EditorUtility.InstanceIDToObject(instanceid) as GameObject;
 			
 			if (gameObject == null || icon == null) return;

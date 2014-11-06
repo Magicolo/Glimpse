@@ -2,8 +2,6 @@
 using System.Collections;
 using Magicolo.AudioTools;
 
-// TODO Move the containers to the editorHelper.
-
 [ExecuteInEditMode]
 public class AudioPlayer : Magicolo.AudioTools.Player {
 
@@ -13,12 +11,16 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 			if (instance == null) {
 				instance = FindObjectOfType<AudioPlayer>();
 			}
+			if (instance == null && Application.isPlaying){
+				Debug.LogError("No AudioPlayer was found in the scene.");
+			}
 			return instance;
 		}
 	}
 	
 	#region Components
 	public AudioPlayerEditorHelper editorHelper;
+	public AudioHierarchyEditorHelper hierarchyEditorHelper;
 	public AudioPlayerItemManager itemManager;
 	#endregion
 	
@@ -31,16 +33,14 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 			itemManager = new AudioPlayerItemManager(Instance);
 		}
 		
-		editorHelper = editorHelper ?? new AudioPlayerEditorHelper();
-		editorHelper.Initialize(Instance);
 		generalSettings = generalSettings ?? new AudioGeneralSettings();
 		generalSettings.Initialize(Instance);
 		hierarchyManager = hierarchyManager ?? new AudioHierarchyManager();
 		hierarchyManager.Initialize(Instance);
-		
-//		foreach (AudioClip audioClip in Resources.FindObjectsOfTypeAll<AudioClip>()) {
-//			Resources.UnloadAsset(audioClip);
-//		}
+		editorHelper = editorHelper ?? new AudioPlayerEditorHelper();
+		editorHelper.Initialize(Instance);
+		hierarchyEditorHelper = hierarchyEditorHelper ?? new AudioHierarchyEditorHelper();
+		hierarchyEditorHelper.Initialize(Instance);
 	}
 	
 	protected virtual void Start() {
@@ -60,6 +60,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 		base.OnLevelWasLoaded(level);
 		
 		SingletonCheck(Instance);
+		Resources.UnloadUnusedAssets();
 	}
 
 	#if UNITY_EDITOR

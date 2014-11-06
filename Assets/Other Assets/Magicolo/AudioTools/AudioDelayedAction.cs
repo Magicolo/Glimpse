@@ -1,24 +1,27 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Magicolo.GeneralTools;
 
 namespace Magicolo.AudioTools {
 	[System.Serializable]
 	public class AudioDelayedAction : AudioAction {
 
-		public float delay;
+		public float targetTime;
 		
-		public AudioDelayedAction(float delay, ActionTypes type, AudioItem audioItem, params AudioOption[] audioOptions)
-			: base(type, audioItem, audioOptions) {
-			this.delay = delay;
+		public AudioDelayedAction(float delay, Metronome metronome, ActionTypes type, AudioItem audioItem, params AudioOption[] audioOptions)
+			: base(metronome, type, audioItem, audioOptions) {
+			
+			this.targetTime = Time.time + delay;
 		}
 		
 		public override void Update() {
-			if (delay <= 0) {
+			if (targetTime <= Time.time) {
 				ApplyAction();
 			}
-			else {
-				delay -= Time.deltaTime;
-			}
+		}
+
+		public override void TickEvent() {
+			Update();
 		}
 	}
 }

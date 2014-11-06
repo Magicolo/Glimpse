@@ -28,22 +28,7 @@ namespace Magicolo.AudioTools {
 			audioItem.Play(audioOptions);
 			return audioItem;
 		}
-		
-		public virtual SingleAudioItem GetSingleAudioItem(string soundName, GameObject source) {
-			AudioInfo audioInfo = infoManager.GetAudioInfo(soundName);
-			AudioSource audioSource = GetAudioSource(audioInfo, source);
-			CoroutineHolder coroutineHolder = audioSource.GetOrAddComponent<CoroutineHolder>();
-			GainManager gainManager = audioSource.GetOrAddComponent<GainManager>();
-			
-			idCounter += 1;
-			SingleAudioItem audioItem = new SingleAudioItem(audioInfo.Name, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, audioPlayer);
-			
-			gainManager.Initialize(source, audioItem, audioPlayer);
-			audioItem.Update();
-			inactiveAudioItems.Add(audioItem);
-			return audioItem;
-		}
-		
+
 		public virtual AudioItem GetAudioItem(AudioContainer container, GameObject source) {
 			MultipleAudioItem multipleAudioItem;
 			
@@ -77,9 +62,15 @@ namespace Magicolo.AudioTools {
 			SingleAudioItem sourceAudioItem = null;
 			
 			switch (subContainer.type) {
+				case AudioSubContainer.Types.Sampler:
+					sourceAudioItem = audioPlayer.generalSettings.sampler.itemManager.GetSingleAudioItem(audioPlayer.generalSettings.sampler.itemManager.GetInstrument(subContainer.instrumentName), subContainer.note, subContainer.velocity, source);
+					if (sourceAudioItem != null) {
+						sourceAudioItem.startAudioOptions = subContainer.audioOptions;
+					} 
+					break;
 				default:
-					if (subContainer.audioInfo != null) {
-						sourceAudioItem = GetSingleAudioItem(subContainer.audioInfo.Name, source);
+					sourceAudioItem = GetSingleAudioItem(subContainer.audioInfo.Name, source);
+					if (sourceAudioItem != null) {
 						sourceAudioItem.startAudioOptions = subContainer.audioOptions;
 					}
 					break;
@@ -116,7 +107,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			mixAudioItem.Update();
-			inactiveAudioItems.Add(mixAudioItem);
+			inactiveMultipleAudioItems.Add(mixAudioItem);
 			return mixAudioItem;
 		}
 		
@@ -143,7 +134,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			randomAudioItem.Update();
-			inactiveAudioItems.Add(randomAudioItem);
+			inactiveMultipleAudioItems.Add(randomAudioItem);
 			return randomAudioItem;
 		}
 		
@@ -177,7 +168,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			switchAudioItem.Update();
-			inactiveAudioItems.Add(switchAudioItem);
+			inactiveMultipleAudioItems.Add(switchAudioItem);
 			return switchAudioItem;
 		}
 	}

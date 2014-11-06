@@ -28,14 +28,15 @@ namespace Magicolo.AudioTools {
 			this.gainManager = gainManager;
 		}
 		
-		public override void Update() {
-			base.Update();
+		public virtual void Update() {
+			UpdateActions();
 			
 			if (State == AudioStates.Playing && !audioSource.loop) {
 				if (audioSource.clip == null || (audioSource.pitch > 0 && audioSource.time >= audioSource.clip.length - audioInfo.fadeOut) || (audioSource.pitch < 0 && audioSource.time <= audioInfo.fadeOut)) {
 					Stop();
 				}
 			}
+			
 			gameObject.name = string.Format("{0} ({1})", audioInfo.Name, State);
 		}
 		
@@ -58,7 +59,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			if (syncMode == SyncMode.None) {
-				actions.Add(new AudioDelayedAction(delay, actionType, this, audioOptions));
+				actions.Add(new AudioDelayedAction(delay, player.metronome, actionType, this, audioOptions));
 			}
 			else {
 				actions.Add(new AudioSyncedDelayedAction(delay, syncMode, player.metronome, actionType, this, audioOptions));
@@ -73,10 +74,9 @@ namespace Magicolo.AudioTools {
 			List<AudioOption> audioOptionsSum = new List<AudioOption>(startAudioOptions);
 			audioOptionsSum.AddRange(audioOptions);
 			
-			if (!TryAddDelayedAction(AudioAction.ActionTypes.Play, audioOptionsSum.ToArray())) {
+			if (audioOptionsSum.Count == 0 || !TryAddDelayedAction(AudioAction.ActionTypes.Play, audioOptionsSum.ToArray())) {
 				audioInfo.ApplyAudioOptions(audioSource, startAudioOptions);
 				audioInfo.ApplyAudioOptions(audioSource, audioOptions);
-				startAudioOptions = new AudioOption[0];
 				
 				if (State == AudioStates.Waiting) {
 					//HACK Trick to deal with reversed sounds.
@@ -95,10 +95,11 @@ namespace Magicolo.AudioTools {
 					}
 				}
 			}
+			startAudioOptions = new AudioOption[0];
 		}
 
 		public override void Pause(params AudioOption[] audioOptions) {
-			if (!TryAddDelayedAction(AudioAction.ActionTypes.Pause, audioOptions)) {
+			if (audioOptions.Length == 0 || !TryAddDelayedAction(AudioAction.ActionTypes.Pause, audioOptions)) {
 				audioInfo.ApplyAudioOptions(audioSource, audioOptions);
 			
 				if (State == AudioStates.Playing || State == AudioStates.FadingIn) {
@@ -113,7 +114,7 @@ namespace Magicolo.AudioTools {
 		}
 
 		public override void Stop(params AudioOption[] audioOptions) {
-			if (!TryAddDelayedAction(AudioAction.ActionTypes.Stop, audioOptions)) {
+			if (audioOptions.Length == 0 || !TryAddDelayedAction(AudioAction.ActionTypes.Stop, audioOptions)) {
 				audioInfo.ApplyAudioOptions(audioSource, audioOptions);
 			
 				if (State != AudioStates.Stopped || State != AudioStates.FadingOut) {
