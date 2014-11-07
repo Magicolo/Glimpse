@@ -152,10 +152,12 @@ public static class ObjectExtensions {
 		MemberInfo member = obj.GetMemberInfoAtPath(memberPath);
 		string[] pathSplit = memberPath.Split('.');
 		
-		if (pathSplit.Length > 1) {
-			Array.Resize(ref pathSplit, pathSplit.Length - 1);
+		if (pathSplit.Length <= 1){
+			obj.SetValueToMember(memberPath, value);
+			return;
 		}
 		
+		Array.Resize(ref pathSplit, pathSplit.Length - 1);
 		object container = obj.GetValueFromMemberAtPath(pathSplit.Concat("."));
 		
 		FieldInfo field = member as FieldInfo;

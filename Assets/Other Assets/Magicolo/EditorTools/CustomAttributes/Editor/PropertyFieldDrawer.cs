@@ -26,6 +26,7 @@ namespace Magicolo.EditorTools {
 			position = Begin(position, property, label);
 		
 			EditorGUI.BeginChangeCheck();
+			
 			if (drawerOverride == null) {
 				EditorGUI.PropertyField(position, property, label, true);
 			}

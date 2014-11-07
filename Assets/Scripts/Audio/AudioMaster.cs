@@ -33,6 +33,11 @@ public class AudioMaster : MonoBehaviour {
 		}
 	}
 	
+	public LibPDControls libpdControls;
+	public PDMaster pdMaster;
+	public Wind wind;
+	public Crickets crickets;
+	
 	static AudioMaster instance;
 	static AudioMaster Instance {
 		get {
@@ -44,12 +49,11 @@ public class AudioMaster : MonoBehaviour {
 	static AudioItem currentFootstepSound;
 	
 	public void Awake() {
-		PDPlayer.OpenPatch("Glimpse_MASTER");
+		libpdControls.Start();
 		
-		PDPlayer.Play("Wind");
-		PDPlayer.Play("Music");
-		PDPlayer.Play("Crickets");
-		PDPlayer.Play("AMB");
+		pdMaster.Update();
+		wind.Update();
+		crickets.Update();
 	}
 	
 	public static AudioItem Play(string soundName, GameObject source = null) {
