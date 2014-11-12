@@ -40,7 +40,6 @@ namespace Magicolo.AudioTools {
 		}
 		#endregion
 
-		static AudioRenamerWindow Instance;
 		AudioPlayer audioPlayer;
 		AudioPlayer AudioPlayer {
 			get {
@@ -51,15 +50,9 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
-		[MenuItem("Magicolo's Tools/Audio Player Renamer")]
+		[MenuItem("Magicolo's Tools/Audio Renamer")]
 		static void CreateSymbolsWindow() {
-			if (Instance == null) {
-				Instance = (AudioRenamerWindow)EditorWindow.GetWindow<AudioRenamerWindow>("Renamer", true);
-				Vector2 screenSize = new Vector2(430, 465);
-				Instance.position = new Rect(Screen.currentResolution.width / 2 - screenSize.x / 2, Screen.currentResolution.height / 2 - screenSize.y / 2, screenSize.x, screenSize.y);
-				Instance.minSize = new Vector2(430, 465);
-				Instance.OnSelectionChange();
-			}
+			CreateWindow<AudioRenamerWindow>("Audio Renamer", new Vector2(430, 465));
 		}
 		
 		void OnGUI() {
@@ -361,7 +354,7 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
-		void OnSelectionChange() {
+		public override void OnSelectionChange() {
 			selectedAudioSetups = Selection.gameObjects != null ? Selection.gameObjects.GetComponents<AudioSetup>() : null;
 			
 			selectedAudioClips.Clear();

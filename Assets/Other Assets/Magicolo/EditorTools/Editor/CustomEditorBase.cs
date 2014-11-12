@@ -471,16 +471,16 @@ namespace Magicolo.EditorTools {
 			MinMaxSlider(minProperty, maxProperty, min, max, false);
 		}
 		
-		public string Popup(GUIContent label, string currentOption, string[] displayedOptions, GUIStyle style, params GUILayoutOption[] options){
+		public string Popup(GUIContent label, string currentOption, string[] displayedOptions, GUIStyle style, params GUILayoutOption[] options) {
 			style = style ?? new GUIStyle("popup");
 			int currentIndex = System.Array.IndexOf(displayedOptions, currentOption);
 			return displayedOptions[Mathf.Clamp(EditorGUILayout.Popup(label, currentIndex, displayedOptions.ToGUIContents(), style, options), 0, Mathf.Max(displayedOptions.Length - 1, 0))];
 		}
 				
-		public string Popup(GUIContent label, string currentOption, string[] displayedOptions, params GUILayoutOption[] options){
+		public string Popup(GUIContent label, string currentOption, string[] displayedOptions, params GUILayoutOption[] options) {
 			return Popup(label, currentOption, displayedOptions, null, options);
 		}
-		
+
 		public void DropArea<T>(Rect dropArea, bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
 			if (Application.isPlaying && disableOnPlay) {
 				return;
@@ -514,6 +514,14 @@ namespace Magicolo.EditorTools {
 		public void DropArea<T>(Rect dropArea, DropCallback<T> dropCallback) where T : Object {
 			DropArea<T>(dropArea, false, dropCallback);
 		}
+				
+		public void DropArea<T>(bool disableOnPlay, DropCallback<T> dropCallback) where T : Object {
+			DropArea<T>(EditorGUI.IndentedRect(GUILayoutUtility.GetLastRect()), disableOnPlay, dropCallback);
+		}
+
+		public void DropArea<T>(DropCallback<T> dropCallback) where T : Object {
+			DropArea<T>(EditorGUI.IndentedRect(GUILayoutUtility.GetLastRect()), false, dropCallback);
+		}
 
 		public void Reorderable(SerializedProperty arrayProperty, int index, Rect dragArea, ReorderCallback reorderCallback = null) {
 			string arrayIdentifier = arrayProperty.name + arrayProperty.arraySize + arrayProperty.depth + arrayProperty.propertyPath + arrayProperty.propertyType;
@@ -529,7 +537,7 @@ namespace Magicolo.EditorTools {
 						DragAndDrop.PrepareStartDrag();
 						DragAndDrop.SetGenericData(arrayIdentifier, arrayProperty);
 						DragAndDrop.SetGenericData("Selected Index", index);
-						DragAndDrop.objectReferences = new Object[1];
+						DragAndDrop.objectReferences = new []{ arrayProperty.serializedObject.targetObject };
 						currentEvent.Use();
 					}
 					break;

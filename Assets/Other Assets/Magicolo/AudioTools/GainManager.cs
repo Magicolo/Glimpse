@@ -12,14 +12,14 @@ namespace Magicolo.AudioTools {
 		
 		Vector3 listenerRelativePosition;
 	
-		public virtual void Initialize(GameObject source, SingleAudioItem audioItem, Magicolo.AudioTools.Player player) {
-			this.source = source ?? player.listener.gameObject;
+		public virtual void Initialize(object source, SingleAudioItem audioItem, Magicolo.AudioTools.Player player) {
+			this.source = source as GameObject;
 			this.audioItem = audioItem;
 			this.player = player;
 			
 			volume = audioItem.GetVolume();
 		}
-		
+
 		public virtual void Activate() {
 			enabled = true;
 		}
@@ -29,12 +29,15 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public virtual void Update() {
-			if (source != null) {
-				transform.position = source.transform.position;
+			if (player.listener != null) {
 				listenerRelativePosition = transform.position - player.listener.transform.position;
 			}
 			else {
 				transform.position = player.listener.transform.position + listenerRelativePosition;
+			}
+			
+			if (source != null) {
+				transform.position = source.transform.position;
 			}
 		}
 		

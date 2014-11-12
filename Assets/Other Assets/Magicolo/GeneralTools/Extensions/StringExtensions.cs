@@ -104,6 +104,10 @@ public static class StringExtensions {
 		}
 		return concat;
 	}
+		
+	public static string Concat(this IList<string> stringArray, char separator) {
+		return stringArray.Concat(separator.ToString());
+	}
 	
 	public static string Concat(this IList<string> stringArray) {
 		return stringArray.Concat("");

@@ -34,7 +34,7 @@ public class AudioMaster : MonoBehaviour {
 	}
 	
 	public LibPDControls libpdControls;
-	public WindParameters wind;
+	public Wind wind;
 	public Crickets crickets;
 	
 	static AudioMaster instance;
@@ -54,10 +54,6 @@ public class AudioMaster : MonoBehaviour {
 		crickets.Update();
 	}
 
-	/*public void Update() {
-		wind.Update();
-	}*/
-	
 	public static AudioItem Play(string soundName, GameObject source = null) {
 		return AudioPlayer.Play(soundName, source);
 	}

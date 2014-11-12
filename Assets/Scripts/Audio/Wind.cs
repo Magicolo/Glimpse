@@ -2,7 +2,7 @@
 using System.Collections;
 
 [System.Serializable]
-public class WindParameters {
+public class Wind {
 
 	//wind parameters
 	[SerializeField, PropertyField]
@@ -318,6 +318,7 @@ public class WindParameters {
 			Update();
 		}
 	}
+	
 	//windspeed
 	[SerializeField, PropertyField]
 	float min;
@@ -331,13 +332,7 @@ public class WindParameters {
 		}
 	}
 	
-
-
-
-		
-	
 	public void Update() {
-
 		if (Application.isPlaying) {
 			PDPlayer.SendValue("wind_BG_freqBase", Wind_BG_freqBase);
 			PDPlayer.SendValue("wind_BG_freqAmbitus", Wind_BG_freqAmbitus);
@@ -364,10 +359,8 @@ public class WindParameters {
 			PDPlayer.SendValue("wind_WH_randVal", Wind_WH_randVal);
 			PDPlayer.SendValue("wind_leaves_mul", Wind_leaves_mul);
 			PDPlayer.SendValue("wind_reverb_dry-wet", Wind_reverb_dryWet);
-		}
 
-		//windspeed
-		if (Application.isPlaying) {
+			//windspeed
 			PDPlayer.SendValue("wind_speed_max", Max);
 			PDPlayer.SendValue("wind_speed_min", Min);
 		}

@@ -2,6 +2,9 @@
 using System.Collections;
 using Magicolo.AudioTools;
 
+#if UNITY_EDITOR
+[UnityEditor.InitializeOnLoad]
+#endif
 [ExecuteInEditMode]
 public class AudioPlayer : Magicolo.AudioTools.Player {
 
@@ -11,7 +14,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 			if (instance == null) {
 				instance = FindObjectOfType<AudioPlayer>();
 			}
-			if (instance == null && Application.isPlaying){
+			if (instance == null && Application.isPlaying) {
 				Debug.LogError("No AudioPlayer was found in the scene.");
 			}
 			return instance;
@@ -102,6 +105,28 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	public static AudioItem Play(string soundName, GameObject source, params AudioOption[] audioOptions) {
 		return Instance.itemManager.Play(soundName, source, audioOptions);
 	}
+		
+	/// <summary>
+	/// Plays an audio source spatialized around the <paramref name="source"/>.
+	/// </summary>
+	/// <param name="soundName">The name of the sound to be played.</param>
+	/// <param name="source">The source around which the audio source will be spatialized.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="soundName"/> inspector.</param>
+	/// <returns>The AudioItem that will let you control the audio source.</returns>
+	public static AudioItem Play(string soundName, Transform source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(soundName, source.gameObject, audioOptions);
+	}
+	
+	/// <summary>
+	/// Plays an audio source spatialized around the <paramref name="source"/>.
+	/// </summary>
+	/// <param name="soundName">The name of the sound to be played.</param>
+	/// <param name="source">The source around which the audio source will be spatialized.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="soundName"/> inspector.</param>
+	/// <returns>The AudioItem that will let you control the audio source.</returns>
+	public static AudioItem Play(string soundName, Vector3 source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(soundName, source, audioOptions);
+	}
 
 	/// <summary>
 	/// Plays an audio source spatialized around the listener.
@@ -110,7 +135,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="soundName"/> inspector.</param>
 	/// <returns>The AudioItem that will let you control the audio source.</returns>
 	public static AudioItem Play(string soundName, params AudioOption[] audioOptions) {
-		return Instance.itemManager.Play(soundName, null, audioOptions);
+		return Instance.itemManager.Play(soundName, Instance.listener.gameObject, audioOptions);
 	}
 
 	/// <summary>
@@ -125,13 +150,35 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	}
 	
 	/// <summary>
+	/// Plays a container spatialized around the <paramref name="source"/>.
+	/// </summary>
+	/// <param name="containerName">The name of the container to be played.</param>
+	/// <param name="source">The source around which the container will be spatialized.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="containerName"/> inspector.</param>
+	/// <returns>The AudioItem that will let you control the container.</returns>
+	public static AudioItem PlayContainer(string containerName, Transform source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.PlayContainer(containerName, source.gameObject, audioOptions);
+	}
+	
+	/// <summary>
+	/// Plays a container spatialized around the <paramref name="source"/>.
+	/// </summary>
+	/// <param name="containerName">The name of the container to be played.</param>
+	/// <param name="source">The source around which the container will be spatialized.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="containerName"/> inspector.</param>
+	/// <returns>The AudioItem that will let you control the container.</returns>
+	public static AudioItem PlayContainer(string containerName, Vector3 source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.PlayContainer(containerName, source, audioOptions);
+	}
+	
+	/// <summary>
 	/// Plays a container spatialized around the listener.
 	/// </summary>
 	/// <param name="containerName">The name of the container to be played.</param>
 	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="containerName"/> inspector.</param>
 	/// <returns>The AudioItem that will let you control the container.</returns>
 	public static AudioItem PlayContainer(string containerName, params AudioOption[] audioOptions) {
-		return Instance.itemManager.PlayContainer(containerName, null, audioOptions);
+		return Instance.itemManager.PlayContainer(containerName, Instance.listener.gameObject, audioOptions);
 	}
 	
 	/// <summary>

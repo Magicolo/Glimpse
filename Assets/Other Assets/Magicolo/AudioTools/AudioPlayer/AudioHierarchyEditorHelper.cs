@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Magicolo.EditorTools;
 
 namespace Magicolo.AudioTools {
 	[System.Serializable]
-	public class AudioHierarchyEditorHelper : Magicolo.EditorTools.EditorHelper {
+	public class AudioHierarchyEditorHelper : EditorHelper {
 		
 		public IEnumerator routine;
 		public AudioSource previewAudioSource;
@@ -15,11 +16,13 @@ namespace Magicolo.AudioTools {
 			Update();
 		}
 		
-		public override void OnHierarchyWindowItemGUI(int instanceid, Rect selectionrect) {
+		public override void OnHierarchyWindowItemGUI(int instanceId, Rect selectionrect) {
+			base.OnHierarchyWindowItemGUI(instanceId, selectionrect);
+			
 			#if UNITY_EDITOR
 			Texture folderIcon = UnityEditor.EditorGUIUtility.IconContent("Project").image;
 			Texture playAudioIcon = UnityEditor.EditorGUIUtility.ObjectContent(null, typeof(AudioSource)).image;
-			GameObject gameObject = UnityEditor.EditorUtility.InstanceIDToObject(instanceid) as GameObject;
+			GameObject gameObject = UnityEditor.EditorUtility.InstanceIDToObject(instanceId) as GameObject;
 			
 			if (gameObject == null || playAudioIcon == null)
 				return;
@@ -82,6 +85,8 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public override void OnPlaymodeStateChanged() {
+			base.OnPlaymodeStateChanged();
+			
 			if (previewAudioSource != null) {
 				previewAudioSource.gameObject.Remove();
 			}
@@ -89,17 +94,21 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public override void OnProjectWindowChanged() {
+			base.OnProjectWindowChanged();
+			
 			if (!Application.isPlaying) {
 				audioPlayer.hierarchyManager.UpdateHierarchy();
 			}
 		}
 
 		public override void OnUpdate() {
+			base.OnUpdate();
+			
 			if (routine != null && !routine.MoveNext()) {
 				routine = null;
 			}
 		}
-		
+
 		IEnumerator DestroyAfterPlaying(AudioSource audioSource) {
 			while (audioSource != null && audioSource.isPlaying) {
 				yield return null;
