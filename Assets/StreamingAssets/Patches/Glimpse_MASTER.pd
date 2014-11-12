@@ -1,4 +1,4 @@
-#N canvas 458 13 1408 982 10;
+#N canvas 751 166 998 704 10;
 #X obj 104 -177 hradio 15 1 0 8 empty empty Zone 0 -8 0 10 -262144
 -1 -1 0;
 #X floatatom 104 -157 5 0 0 0 - - -;
@@ -8,7 +8,7 @@
 #X msg -29 -215 0;
 #X obj 440 492 catch~ \$0-dac-L;
 #X obj 475 513 catch~ \$0-dac-R;
-#N canvas 0 0 1916 998 music 0;
+#N canvas 368 110 1213 811 music 1;
 #X obj 214 203 mclock;
 #X obj 522 328 s music_clock_num;
 #X obj 583 308 s music_clock_sub;
@@ -944,7 +944,7 @@
 #X connect 37 0 17 0;
 #X coords 0 -1 1 1 400 350 1 100 100;
 #X restore 459 410 pd Parameters;
-#N canvas 20 0 1884 982 3-decal 0;
+#N canvas -8 -8 1680 967 3-decal 1;
 #X obj 118 -322 r music_tonique;
 #X obj 103 -300 + 0;
 #X obj 103 -97 makenote;
@@ -3412,7 +3412,7 @@ array size;
 #X coords 0 -1 1 1 100 200 1 100 100;
 #X restore 82 252 pd AMB;
 #X obj 409 387 rev3~ 100 90 3000 20;
-#N canvas 960 0 944 982 Wind 1;
+#N canvas 481 119 944 982 Wind 0;
 #X obj 530 65 noise~;
 #X obj 530 87 s~ \$0-white;
 #X obj 331 192 r wind_BG_freqBase;
@@ -3632,7 +3632,7 @@ array size;
 #X connect 7 0 2 1;
 #X connect 8 0 0 0;
 #X restore 361 65 pd windspeed;
-#N canvas 1021 229 909 693 whistles 1;
+#N canvas 413 260 909 693 whistles 0;
 #X obj -357 134 r~ \$0-white;
 #X obj 620 13 r \$0-octaves;
 #X obj 714 17 inlet pan1;
