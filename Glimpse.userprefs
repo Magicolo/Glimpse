@@ -1,8 +1,12 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Temp\Compiled-TreeCreatorLeaves-.shader">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Audio\AreaTriggers.cs">
     <Files>
-      <File FileName="Temp\Compiled-TreeCreatorLeaves-.shader" Line="1" Column="5" />
+      <File FileName="Assets\Scripts\Audio\LevelProgress.cs" Line="9" Column="1" />
+      <File FileName="Assets\Scripts\Audio\AudioMaster.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Audio\Crickets.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Audio\WindParameters.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Audio\AreaTriggers.cs" Line="13" Column="31" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
