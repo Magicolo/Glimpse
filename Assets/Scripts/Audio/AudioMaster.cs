@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class AudioMaster : MonoBehaviour {
@@ -34,8 +34,7 @@ public class AudioMaster : MonoBehaviour {
 	}
 	
 	public LibPDControls libpdControls;
-	public PDMaster pdMaster;
-	public Wind wind;
+	public WindParameters wind;
 	public Crickets crickets;
 	
 	static AudioMaster instance;
@@ -50,12 +49,15 @@ public class AudioMaster : MonoBehaviour {
 	
 	public void Awake() {
 		libpdControls.Start();
-		
-		pdMaster.Update();
+
 		wind.Update();
 		crickets.Update();
 	}
 
+	/*public void Update() {
+		wind.Update();
+	}*/
+	
 	public static AudioItem Play(string soundName, GameObject source = null) {
 		return AudioPlayer.Play(soundName, source);
 	}
