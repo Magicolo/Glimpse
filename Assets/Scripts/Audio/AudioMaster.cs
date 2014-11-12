@@ -57,9 +57,9 @@ public class AudioMaster : MonoBehaviour {
 		crickets.Update();
 	}
 
-	public void Update() {
+	/*public void Update() {
 		wind.Update();
-	}
+	}*/
 	
 	public static AudioItem Play(string soundName, GameObject source = null) {
 		return AudioPlayer.Play(soundName, source);

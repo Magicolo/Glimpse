@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿/*using UnityEngine;
 using System.Collections;
 using LibPDBinding;
 
@@ -103,7 +103,7 @@ public class WindSpeed {
 			speed = value;
 			Update();
 		}
-	}*/
+	}
 
 	
 	public void Update() {
@@ -112,4 +112,4 @@ public class WindSpeed {
 			PDPlayer.SendValue("wind_speed_min", Min);
 		}
 	}
-}
+}*/

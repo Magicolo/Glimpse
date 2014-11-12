@@ -6,6 +6,8 @@ public class WindParameters {
 
 	public GlimpseCamera glimpseCam;
 
+	int countFrames = 0;
+
 	//wind parameters
 	[SerializeField, PropertyField]
 	float wind_BG_freqBase = 100.0F;
@@ -332,6 +334,19 @@ public class WindParameters {
 			Update();
 		}
 	}
+
+	public void glimpseDistance(){
+		if (glimpseCam.glimpseDistance > 0.0F) {
+			
+			wind_WH_freqBase = glimpseCam.glimpseDistance * 100;
+			wind_WH_mul = glimpseCam.glimpseDistance * 2;
+			wind_BG_mul = 1 + glimpseCam.glimpseDistance * 2;
+			
+		}
+	}
+
+
+		
 	
 	public void Update() {
 		if (Application.isPlaying) {
@@ -362,17 +377,15 @@ public class WindParameters {
 			PDPlayer.SendValue("wind_reverb_dry-wet", Wind_reverb_dryWet);
 		}
 
-		if (glimpseCam.glimpseDistance > 0.05F){
-			wind_WH_freqBase = glimpseCam.glimpseDistance * 100;
-			wind_WH_mul = glimpseCam.glimpseDistance * 2;
-			wind_BG_mul = 1 + glimpseCam.glimpseDistance * 2;
-		}
-
 		//windspeed
 		if (Application.isPlaying) {
 			PDPlayer.SendValue("wind_speed_max", Max);
 			PDPlayer.SendValue("wind_speed_min", Min);
 		}
+
+		glimpseDistance ();
+
 	}
 }
+
 
