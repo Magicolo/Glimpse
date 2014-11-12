@@ -7,11 +7,20 @@ public class AreaTriggers : MonoBehaviour {
 	GameObject trigger1;
 
 	public int area = 0;
-	int[] areas = new int[2];
+	int[] areas = new int[2]{0, 1}; // 0 old, 1 new
 
 	void OnTriggerEnter(Collider trigger1){
-		Debug.Log ("caca enteredd");
+		if (areas [0] < areas [1]){
+			areas[1] = areas[0];
+			areas[0] = 1;
 		}
+		else {
+			areas[1] = areas[0];
+			areas[0] = 0;
+		}
+		area = areas[0];
+		PDPlayer.SendValue("glimpse_area", area);
+	}
 
 	// Use this for initialization
 	void Start () {
