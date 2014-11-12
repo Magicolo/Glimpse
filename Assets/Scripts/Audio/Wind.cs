@@ -6,10 +6,8 @@ using LibPDBinding;
 public class Wind {
 
 	public WindParameters windParameters;
-	public WindSpeed windSpeed;
 	
 	public void Update() {
 		windParameters.Update();
-		windSpeed.Update();
 	}
 }

@@ -4,6 +4,10 @@ using System.Collections;
 [System.Serializable]
 public class WindParameters {
 
+	public GlimpseCamera glimpseCam;
+
+	int countFrames = 0;
+
 	//wind parameters
 	[SerializeField, PropertyField]
 	float wind_BG_freqBase = 100.0F;
@@ -234,7 +238,7 @@ public class WindParameters {
 	}
 
 	[SerializeField, PropertyField]
-	float wind_WH_mul = 4.0F;
+	float wind_WH_mul = 0.5F;
 	public float Wind_WH_mul {
 		get {
 			return wind_WH_mul;
@@ -258,7 +262,7 @@ public class WindParameters {
 	}
 
 	[SerializeField, PropertyField]
-	float wind_WH_octDamp = 0.5F;
+	float wind_WH_octDamp = 1.0F;
 	public float Wind_WH_octDamp {
 		get {
 			return wind_WH_octDamp;
@@ -270,7 +274,7 @@ public class WindParameters {
 	}
 
 	[SerializeField, PropertyField]
-	float wind_WH_randVal = 10000.0F;
+	float wind_WH_randVal = 0.0F;
 	public float Wind_WH_randVal {
 		get {
 			return wind_WH_randVal;
@@ -305,6 +309,44 @@ public class WindParameters {
 			Update();
 		}
 	}
+
+	//windspeed
+	[SerializeField, PropertyField]
+	float max = 0.3F;
+	public float Max {
+		get {
+			return max;
+		}
+		set {
+			max = value;
+			Update();
+		}
+	}
+	//windspeed
+	[SerializeField, PropertyField]
+	float min;
+	public float Min {
+		get {
+			return min;
+		}
+		set {
+			min = value;
+			Update();
+		}
+	}
+
+	public void glimpseDistance(){
+		if (glimpseCam.glimpseDistance > 0.0F) {
+			
+			wind_WH_freqBase = glimpseCam.glimpseDistance * 100;
+			wind_WH_mul = glimpseCam.glimpseDistance * 2;
+			wind_BG_mul = 1 + glimpseCam.glimpseDistance * 2;
+			
+		}
+	}
+
+
+		
 	
 	public void Update() {
 		if (Application.isPlaying) {
@@ -334,5 +376,16 @@ public class WindParameters {
 			PDPlayer.SendValue("wind_leaves_mul", Wind_leaves_mul);
 			PDPlayer.SendValue("wind_reverb_dry-wet", Wind_reverb_dryWet);
 		}
+
+		//windspeed
+		if (Application.isPlaying) {
+			PDPlayer.SendValue("wind_speed_max", Max);
+			PDPlayer.SendValue("wind_speed_min", Min);
+		}
+
+		glimpseDistance ();
+
 	}
 }
+
+
