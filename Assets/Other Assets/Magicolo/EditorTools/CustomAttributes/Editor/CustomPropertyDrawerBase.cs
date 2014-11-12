@@ -29,7 +29,7 @@ namespace Magicolo.EditorTools {
 					foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()) {
 						foreach (Type type in assembly.GetTypes()) {
 							if (type.Name == "ScriptAttributeUtility") {
-								getPropertyDrawerMethod = type.GetMethod("GetDrawerTypeForType", ObjectExtensions.Flags);
+								getPropertyDrawerMethod = type.GetMethod("GetDrawerTypeForType", ObjectExtensions.AllFlags);
 							}
 						}
 					}

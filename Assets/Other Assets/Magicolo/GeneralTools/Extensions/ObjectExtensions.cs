@@ -10,7 +10,11 @@ using System.Collections;
 
 public static class ObjectExtensions {
 	
-	public const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+	public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+	public const BindingFlags AllPublicFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+	public const BindingFlags AllNonPublicFlags = BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+	public const BindingFlags AllStaticFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy;
+	public const BindingFlags AllInstanceFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
 
 	public static void Remove(this UnityEngine.Object obj) {
 		if (obj != null) {
@@ -46,12 +50,12 @@ public static class ObjectExtensions {
 	}
 
 	public static MemberInfo GetMemberInfo(this object obj, string memberName) {
-		FieldInfo field = obj.GetType().GetField(memberName, Flags);
+		FieldInfo field = obj.GetType().GetField(memberName, AllFlags);
 		if (field != null) {
 			return field;
 		}
 		
-		PropertyInfo property = obj.GetType().GetProperty(memberName, Flags);
+		PropertyInfo property = obj.GetType().GetProperty(memberName, AllFlags);
 		if (property != null) {
 			return property;
 		}
@@ -152,7 +156,7 @@ public static class ObjectExtensions {
 		MemberInfo member = obj.GetMemberInfoAtPath(memberPath);
 		string[] pathSplit = memberPath.Split('.');
 		
-		if (pathSplit.Length <= 1){
+		if (pathSplit.Length <= 1) {
 			obj.SetValueToMember(memberPath, value);
 			return;
 		}
@@ -174,32 +178,40 @@ public static class ObjectExtensions {
 	}
 	
 	public static object InvokeMethod(this object obj, string methodName, params object[] arguments) {
-		MethodInfo method = obj.GetType().GetMethod(methodName, Flags);
+		MethodInfo method = obj.GetType().GetMethod(methodName, AllFlags);
 		if (method != null) {
 			return method.Invoke(obj, arguments);
 		}
 		return null;
 	}
 	
-	public static string[] GetFieldsPropertiesNames(this Type type, params Type[] filter) {
+	public static string[] GetFieldsPropertiesNames(this Type type, BindingFlags flags, params Type[] filter) {
 		List<string> names = new List<string>();
 		
-		foreach (FieldInfo field in type.GetFields(Flags)) {
+		foreach (FieldInfo field in type.GetFields(flags)) {
 			if (filter == null || filter.Length == 0 || filter.Any(t => t.IsAssignableFrom(field.FieldType))) {
 				names.Add(field.Name);
 			}
 		}
 		
-		foreach (PropertyInfo property in type.GetProperties(Flags)) {
+		foreach (PropertyInfo property in type.GetProperties(flags)) {
 			if (filter == null || filter.Length == 0 || filter.Any(t => t.IsAssignableFrom(property.PropertyType))) {
 				names.Add(property.Name);
 			}
 		}
 		return names.ToArray();
 	}
+			
+	public static string[] GetFieldsPropertiesNames(this Type type, params Type[] filter) {
+		return GetFieldsPropertiesNames(type, AllFlags, filter);
+	}
+	
+	public static string[] GetFieldsPropertiesNames(this object obj, BindingFlags flags, params Type[] filter) {
+		return GetFieldsPropertiesNames(obj.GetType(), flags, filter);
+	}
 	
 	public static string[] GetFieldsPropertiesNames(this object obj, params Type[] filter) {
-		return GetFieldsPropertiesNames(obj.GetType(), filter);
+		return GetFieldsPropertiesNames(obj.GetType(), AllFlags, filter);
 	}
 	
 	public static T Clone<T>(this T toClone) {
@@ -233,7 +245,7 @@ public static class ObjectExtensions {
 			parametersToIgnore = parametersToIgnoreList.ToArray();
 		}
 		
-		foreach (FieldInfo fieldInfo in copyFrom.GetType().GetFields(Flags)) {
+		foreach (FieldInfo fieldInfo in copyFrom.GetType().GetFields(AllFlags)) {
 			if ((fieldInfo.IsPublic || fieldInfo.GetCustomAttributes(typeof(SerializeField), true).Length != 0) && !fieldInfo.IsLiteral && fieldInfo.GetCustomAttributes(typeof(ObsoleteAttribute), true).Length == 0 && !parametersToIgnore.Contains(fieldInfo.Name)) {
 				try {
 					fieldInfo.SetValue(copyTo, fieldInfo.GetValue(copyFrom));
@@ -242,7 +254,7 @@ public static class ObjectExtensions {
 				}
 			}
 		}
-		foreach (PropertyInfo propertyInfo in copyFrom.GetType().GetProperties(Flags)) {
+		foreach (PropertyInfo propertyInfo in copyFrom.GetType().GetProperties(AllFlags)) {
 			if (propertyInfo.CanWrite && propertyInfo.GetCustomAttributes(typeof(ObsoleteAttribute), true).Length == 0 && !parametersToIgnore.Contains(propertyInfo.Name)) {
 				try {
 					propertyInfo.SetValue(copyTo, propertyInfo.GetValue(copyFrom, null), null);

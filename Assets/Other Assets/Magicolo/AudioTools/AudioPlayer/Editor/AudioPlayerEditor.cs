@@ -176,7 +176,7 @@ namespace Magicolo.AudioTools {
 			EditorGUILayout.EndHorizontal();
 			
 			if (stateHolder != null) {
-				string[] enumNames = stateHolder.GetFieldsPropertiesNames(typeof(Enum));
+				string[] enumNames = stateHolder.GetFieldsPropertiesNames(ObjectExtensions.AllPublicFlags, typeof(Enum));
 				
 				if (enumNames.Length > 0) {
 					int index = Mathf.Max(Array.IndexOf(enumNames, statePathProperty.stringValue), 0);
@@ -223,6 +223,12 @@ namespace Magicolo.AudioTools {
 				int sourceSubContainerIndex = sourceParentIds.IndexOf(sourceSubContainer.id);
 				int targetSubContainerIndex = targetParentIds.IndexOf(targetSubContainer.id);
 				sourceParentIds.Move(sourceSubContainerIndex, targetSubContainerIndex);
+			}
+			else {
+				int targetSubContainerIndex = targetParentIds.IndexOf(targetSubContainer.id);
+				targetParentIds.Insert(targetSubContainerIndex, sourceSubContainer.id);
+				sourceParentIds.Remove(sourceSubContainer.id);
+				sourceSubContainer.parentId = targetSubContainer.parentId;
 			}
 			serializedObject.Update();
 		}
@@ -357,8 +363,8 @@ namespace Magicolo.AudioTools {
 				string statePath = currentSubContainer.parentId == 0 ? currentContainer.statePath : currentContainer.GetSubContainerWithID(currentSubContainer.parentId).statePath;
 				
 				if (stateHolder != null && !string.IsNullOrEmpty(statePath)) {
-					FieldInfo enumField = stateHolder.GetType().GetField(statePath, ObjectExtensions.Flags);
-					PropertyInfo enumProperty = stateHolder.GetType().GetProperty(statePath, ObjectExtensions.Flags);
+					FieldInfo enumField = stateHolder.GetType().GetField(statePath, ObjectExtensions.AllPublicFlags);
+					PropertyInfo enumProperty = stateHolder.GetType().GetProperty(statePath, ObjectExtensions.AllPublicFlags);
 					Type enumType = enumField == null ? enumProperty == null ? null : enumProperty.PropertyType : enumField.FieldType;
 					
 					if (enumType != null) {

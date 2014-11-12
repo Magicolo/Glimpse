@@ -21,8 +21,8 @@ namespace Magicolo.AudioTools {
 			}
 		}
 
-		GameObject source;
-		public GameObject Source {
+		object source;
+		public object Source {
 			get {
 				return source;
 			}
@@ -77,12 +77,6 @@ namespace Magicolo.AudioTools {
 		}
 		
 		protected PDPlayer pdPlayer;
-		
-		public PDSpatializer(string moduleName, GameObject source, PDPlayer pdPlayer) {
-			this.moduleName = moduleName;
-			this.source = source;
-			this.pdPlayer = pdPlayer;
-		}
 
 		public PDSpatializer(string moduleName, PDEditorModule editorModule, PDPlayer pdPlayer) {
 			this.moduleName = moduleName;
@@ -125,7 +119,9 @@ namespace Magicolo.AudioTools {
 				const float hrfFactor = 1500;
 				const float curveDepth = 3.5F;
 			
-				Vector3 listenerToSource = Source.transform.position - pdPlayer.listener.transform.position;
+				Vector3 sourcePosition = GetSourcePosition();
+				
+				Vector3 listenerToSource = sourcePosition - pdPlayer.listener.transform.position;
 				float angle = Vector3.Angle(pdPlayer.listener.transform.right, listenerToSource);
 				float panLeft = (1 - PanLevel) + PanLevel * Mathf.Sin(Mathf.Max(180 - angle, 90) * Mathf.Deg2Rad);
 				float panRight = (1 - PanLevel) + PanLevel * Mathf.Sin(Mathf.Max(angle, 90) * Mathf.Deg2Rad);
@@ -133,7 +129,7 @@ namespace Magicolo.AudioTools {
 				float behindFactor = 1 + 4 * (Mathf.Clamp(Vector3.Angle(listenerToSource, pdPlayer.listener.transform.forward), 90, 135) - 90) / (135 - 90);
 				float hrfLeft = Mathf.Pow(panLeft, 2) * (fullFrequencyRange - hrfFactor) / behindFactor + hrfFactor;
 				float hrfRight = Mathf.Pow(panRight, 2) * (fullFrequencyRange - hrfFactor) / behindFactor + hrfFactor;
-				float distance = Vector3.Distance(Source.transform.position, pdPlayer.listener.transform.position);
+				float distance = Vector3.Distance(sourcePosition, pdPlayer.listener.transform.position);
 				float adjustedDistance = Mathf.Clamp01(Mathf.Max(distance - MinDistance, 0) / Mathf.Max(MaxDistance - MinDistance, 0.001F));
 				
 				float attenuation;
@@ -152,12 +148,24 @@ namespace Magicolo.AudioTools {
 			}
 		}
 	
+		public Vector3 GetSourcePosition(){
+			Vector3 sourcePosition = pdPlayer.transform.position;
+			
+			if (source is GameObject) {
+				sourcePosition = ((GameObject)source).transform.position;
+			}
+			else if (source is Vector3) {
+				sourcePosition = ((Vector3)source);
+			}
+			return sourcePosition;
+		}
+		
 		public bool CheckForChanges() {
 			bool changed = false;
 			
-			if (Source != null && (Source.transform.hasChanged || pdPlayer.listener.transform.hasChanged)) {
+			if (Source is GameObject && (((GameObject)Source).transform.hasChanged || pdPlayer.listener.transform.hasChanged)) {
 				changed = true;
-				pdPlayer.SetTransformHasChanged(Source.transform, false);
+				pdPlayer.SetTransformHasChanged(((GameObject)Source).transform, false);
 				pdPlayer.SetTransformHasChanged(pdPlayer.listener.transform, false);
 			}
 			
