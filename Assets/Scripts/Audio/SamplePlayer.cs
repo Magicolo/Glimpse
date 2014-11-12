@@ -14,7 +14,7 @@ public class SamplePlayer : MonoBehaviour {
 	}
 	
 	void Update(){
-		for (int i = 0; i < notesToPlay.Count; i++) {
+		for (int i = notesToPlay.Count; i > 0; i--) {
 			Sampler.Play("Piano", notesToPlay.Pop(), velocitiesToPlay.Pop());
 		}
 	}
