@@ -24,7 +24,6 @@ namespace Magicolo.EditorTools {
 			UnityEditor.EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
 			UnityEditor.EditorApplication.searchChanged += OnSearchChanged;
 			UnityEditor.EditorApplication.update += OnUpdate;
-			UnityEditor.EditorApplication.update += CheckForSelectionChanges;
 			#endif
 		}
 		
@@ -45,7 +44,7 @@ namespace Magicolo.EditorTools {
 		public virtual void OnHierarchyWindowChanged() {
 		}
 		
-		public virtual void OnHierarchyWindowItemGUI(int instanceid, Rect selectionrect) {
+		public virtual void OnHierarchyWindowItemGUI(int instanceId, Rect selectionrect) {
 		}
 		
 		public virtual void OnModifierKeysChanged() {
@@ -68,8 +67,9 @@ namespace Magicolo.EditorTools {
 		}
 		
 		public virtual void OnUpdate() {
+			CheckForSelectionChanges();
 		}
-		
+
 		void CheckForSelectionChanges() {
 			#if UNITY_EDITOR
 			bool changed = false;

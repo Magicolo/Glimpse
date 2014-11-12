@@ -17,19 +17,19 @@ namespace Magicolo.AudioTools {
 			this.audioPlayer = audioPlayer;
 		}
 
-		public virtual AudioItem Play(string soundName, GameObject source, params AudioOption[] audioOptions) {
+		public virtual AudioItem Play(string soundName, object source, params AudioOption[] audioOptions) {
 			AudioItem audioItem = GetSingleAudioItem(soundName, source);
 			audioItem.Play(audioOptions);
 			return audioItem;
 		}
 
-		public virtual AudioItem PlayContainer(string containerName, GameObject source, params AudioOption[] audioOptions) {
+		public virtual AudioItem PlayContainer(string containerName, object source, params AudioOption[] audioOptions) {
 			AudioItem audioItem = GetAudioItem(audioPlayer.containerManager.GetContainer(containerName), source);
 			audioItem.Play(audioOptions);
 			return audioItem;
 		}
 
-		public virtual AudioItem GetAudioItem(AudioContainer container, GameObject source) {
+		public virtual AudioItem GetAudioItem(AudioContainer container, object source) {
 			MultipleAudioItem multipleAudioItem;
 			
 			switch (container.type) {
@@ -46,7 +46,7 @@ namespace Magicolo.AudioTools {
 			return multipleAudioItem;
 		}
 		
-		public virtual AudioItem GetAudioItem(AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+		public virtual AudioItem GetAudioItem(AudioContainer container, AudioSubContainer subContainer, object source) {
 			AudioItem audioItem = null;
 			
 			if (subContainer.IsSource) {
@@ -58,7 +58,7 @@ namespace Magicolo.AudioTools {
 			return audioItem;
 		}
 		
-		public virtual SingleAudioItem GetSourceAudioItem(AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+		public virtual SingleAudioItem GetSourceAudioItem(AudioContainer container, AudioSubContainer subContainer, object source) {
 			SingleAudioItem sourceAudioItem = null;
 			
 			switch (subContainer.type) {
@@ -78,7 +78,7 @@ namespace Magicolo.AudioTools {
 			return sourceAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetContainerAudioItem(AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+		public virtual MultipleAudioItem GetContainerAudioItem(AudioContainer container, AudioSubContainer subContainer, object source) {
 			MultipleAudioItem multipleAudioItem = null;
 				
 			switch (subContainer.type) {
@@ -95,7 +95,7 @@ namespace Magicolo.AudioTools {
 			return multipleAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetMixAudioItem(AudioContainer container, List<int> childrenIds, GameObject source) {
+		public virtual MultipleAudioItem GetMixAudioItem(AudioContainer container, List<int> childrenIds, object source) {
 			idCounter += 1;
 			MultipleAudioItem mixAudioItem = new MultipleAudioItem(container.Name, idCounter, this, audioPlayer);
 			
@@ -111,7 +111,7 @@ namespace Magicolo.AudioTools {
 			return mixAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetRandomAudioItem(AudioContainer container, List<int> childrenIds, GameObject source) {
+		public virtual MultipleAudioItem GetRandomAudioItem(AudioContainer container, List<int> childrenIds, object source) {
 			idCounter += 1;
 			MultipleAudioItem randomAudioItem = new MultipleAudioItem(container.Name, idCounter, this, audioPlayer);
 			List<AudioSubContainer> childcontainers = new List<AudioSubContainer>();
@@ -138,7 +138,7 @@ namespace Magicolo.AudioTools {
 			return randomAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetSwitchAudioItem(AudioContainer container, List<int> childrenIds, GameObject source) {
+		public virtual MultipleAudioItem GetSwitchAudioItem(AudioContainer container, List<int> childrenIds, object source) {
 			idCounter += 1;
 			MultipleAudioItem switchAudioItem = new MultipleAudioItem(container.Name, idCounter, this, audioPlayer);
 			

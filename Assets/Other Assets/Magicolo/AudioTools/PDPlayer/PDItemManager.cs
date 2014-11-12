@@ -24,7 +24,7 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
-		public PDSingleAudioItem Play(string moduleName, string soundName, GameObject source, params AudioOption[] audioOptions) {
+		public PDSingleAudioItem Play(string moduleName, string soundName, object source, params AudioOption[] audioOptions) {
 			PDModule module = GetModule(moduleName, source);
 			PDSingleAudioItem audioItem = GetSingleAudioItem(moduleName, soundName, module.spatializer.Source);
 			module.AddAudioItem(audioItem);
@@ -33,13 +33,13 @@ namespace Magicolo.AudioTools {
 			return audioItem;
 		}
 
-		public PDModule Play(string moduleName, GameObject source, params AudioOption[] audioOptions) {
+		public PDModule Play(string moduleName, object source, params AudioOption[] audioOptions) {
 			PDModule module = GetModule(moduleName, source);
 			module.Play(audioOptions);
 			return module;
 		}
 		
-		public PDModule PlayContainer(string moduleName, string containerName, GameObject source, params AudioOption[] audioOptions) {
+		public PDModule PlayContainer(string moduleName, string containerName, object source, params AudioOption[] audioOptions) {
 			PDModule module = GetModule(moduleName, source);
 			module.AddAudioItem(GetAudioItem(moduleName, pdPlayer.containerManager.GetContainer(containerName), module.spatializer.Source));
 			module.Play(audioOptions);
@@ -80,7 +80,7 @@ namespace Magicolo.AudioTools {
 			return moduleDict[moduleName];
 		}
 
-		public PDModule GetModule(string moduleName, GameObject source) {
+		public PDModule GetModule(string moduleName, object source) {
 			PDModule module;
 			if (moduleDict.ContainsKey(moduleName)) {
 				module = moduleDict[moduleName];
@@ -99,7 +99,7 @@ namespace Magicolo.AudioTools {
 			return module;
 		}
 
-		public PDSingleAudioItem GetSingleAudioItem(string moduleName, string soundName, GameObject source) {
+		public PDSingleAudioItem GetSingleAudioItem(string moduleName, string soundName, object source) {
 			AudioInfo audioInfo = infoManager.GetAudioInfo(soundName);
 			AudioSource audioSource = GetAudioSource(audioInfo, source);
 			CoroutineHolder coroutineHolder = audioSource.GetOrAddComponent<CoroutineHolder>();
@@ -114,7 +114,7 @@ namespace Magicolo.AudioTools {
 			return audioItem;
 		}
 		
-		public virtual AudioItem GetAudioItem(string moduleName, AudioContainer container, GameObject source) {
+		public virtual AudioItem GetAudioItem(string moduleName, AudioContainer container, object source) {
 			MultipleAudioItem multipleAudioItem;
 			
 			idCounter += 1;
@@ -132,7 +132,7 @@ namespace Magicolo.AudioTools {
 			return multipleAudioItem;
 		}
 		
-		public virtual AudioItem GetAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+		public virtual AudioItem GetAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, object source) {
 			AudioItem audioItem = null;
 			
 			if (subContainer.IsSource) {
@@ -144,7 +144,7 @@ namespace Magicolo.AudioTools {
 			return audioItem;
 		}
 		
-		public virtual PDSingleAudioItem GetSourceAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+		public virtual PDSingleAudioItem GetSourceAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, object source) {
 			PDSingleAudioItem sourceAudioItem = null;
 			
 			switch (subContainer.type) {
@@ -158,7 +158,7 @@ namespace Magicolo.AudioTools {
 			return sourceAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetContainerAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, GameObject source) {
+		public virtual MultipleAudioItem GetContainerAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, object source) {
 			MultipleAudioItem multipleAudioItem = null;
 				
 			switch (subContainer.type) {
@@ -175,7 +175,7 @@ namespace Magicolo.AudioTools {
 			return multipleAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetMixAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, GameObject source) {
+		public virtual MultipleAudioItem GetMixAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, object source) {
 			idCounter += 1;
 			MultipleAudioItem mixAudioItem = new MultipleAudioItem(container.Name, idCounter, this, pdPlayer);
 			
@@ -191,7 +191,7 @@ namespace Magicolo.AudioTools {
 			return mixAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetRandomAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, GameObject source) {
+		public virtual MultipleAudioItem GetRandomAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, object source) {
 			idCounter += 1;
 			MultipleAudioItem randomAudioItem = new MultipleAudioItem(container.Name, idCounter, this, pdPlayer);
 			List<AudioSubContainer> childcontainers = new List<AudioSubContainer>();
@@ -218,7 +218,7 @@ namespace Magicolo.AudioTools {
 			return randomAudioItem;
 		}
 		
-		public virtual MultipleAudioItem GetSwitchAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, GameObject source) {
+		public virtual MultipleAudioItem GetSwitchAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, object source) {
 			idCounter += 1;
 			MultipleAudioItem switchAudioItem = new MultipleAudioItem(container.Name, idCounter, this, pdPlayer);
 			

@@ -68,6 +68,32 @@ public class Sampler : Magicolo.AudioTools.Player {
 	public static AudioItem Play(string instrumentName, int note, float velocity, GameObject source, params AudioOption[] audioOptions) {
 		return Instance.itemManager.Play(instrumentName, note, velocity, source, audioOptions);
 	}
+	
+	/// <summary>
+	/// Plays a note from a sampler instrument spatialized around the <paramref name="source"/>.
+	/// </summary>
+	/// <param name="instrumentName">The name of the sampler instrument to be played.</param>
+	/// <param name = "note">The note to be played.</param>
+	/// <param name = "velocity">The velocity at which the note will be played.</param>
+	/// <param name="source">The source around which the note will be spatialized.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="instrumentName"/> inspector.</param>
+	/// <returns>If the velocity > 0, the AudioItem that will let you control the note; Otherwise, the AudioItem representing the instrument.</returns>
+	public static AudioItem Play(string instrumentName, int note, float velocity, Transform source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(instrumentName, note, velocity, source.gameObject, audioOptions);
+	}
+	
+	/// <summary>
+	/// Plays a note from a sampler instrument spatialized around the <paramref name="source"/>.
+	/// </summary>
+	/// <param name="instrumentName">The name of the sampler instrument to be played.</param>
+	/// <param name = "note">The note to be played.</param>
+	/// <param name = "velocity">The velocity at which the note will be played.</param>
+	/// <param name="source">The source around which the note will be spatialized.</param>
+	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="instrumentName"/> inspector.</param>
+	/// <returns>If the velocity > 0, the AudioItem that will let you control the note; Otherwise, the AudioItem representing the instrument.</returns>
+	public static AudioItem Play(string instrumentName, int note, float velocity, Vector3 source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(instrumentName, note, velocity, source, audioOptions);
+	}
 
 	/// <summary>
 	/// Plays a note from a sampler instrument spatialized around the listener.

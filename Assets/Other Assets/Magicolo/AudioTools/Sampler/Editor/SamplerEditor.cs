@@ -87,7 +87,7 @@ namespace Magicolo.AudioTools {
 				EditorGUILayout.PropertyField(currentInstrumentSettingsProperty.FindPropertyRelative("is3D"), "3D Clips".ToGUIContent());
 		
 				// Generate Settings
-				EditorGUILayout.PropertyField(currentInstrumentSettingsProperty.FindPropertyRelative("generateMode"));
+				currentInstrumentSettings.generateMode = (SamplerInstrumentSettings.GenerateModes)EditorGUILayout.EnumPopup("Generate Mode".ToGUIContent(), currentInstrumentSettings.generateMode);
 				EditorGUI.EndDisabledGroup();
 		
 				if (currentInstrumentSettings.generateMode == SamplerInstrumentSettings.GenerateModes.GenerateAtRuntime) {

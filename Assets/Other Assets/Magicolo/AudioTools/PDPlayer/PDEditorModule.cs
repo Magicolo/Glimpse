@@ -124,7 +124,7 @@ namespace Magicolo.AudioTools {
 		public PDEditorModule(PDModule module, PDPlayer pdPlayer) {
 			this.name = module.Name;
 			this.volume = module.GetVolume();
-			this.source = module.spatializer.Source;
+			this.source = module.spatializer.Source as GameObject;
 			this.volumeRolloff = module.spatializer.VolumeRolloff;
 			this.minDistance = module.spatializer.MinDistance;
 			this.maxDistance = module.spatializer.MaxDistance;

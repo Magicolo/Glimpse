@@ -15,10 +15,12 @@ namespace Magicolo.AudioTools {
 			Update();
 		}
 
-		public override void OnHierarchyWindowItemGUI(int instanceid, Rect selectionrect) {
+		public override void OnHierarchyWindowItemGUI(int instanceId, Rect selectionrect) {
+			base.OnHierarchyWindowItemGUI(instanceId, selectionrect);
+			
 			#if UNITY_EDITOR
 			icon = icon ?? HelperFunctions.LoadAssetInFolder<Texture>("audioplayer.png", "Magicolo/AudioTools/AudioPlayer");
-			GameObject gameObject = UnityEditor.EditorUtility.InstanceIDToObject(instanceid) as GameObject;
+			GameObject gameObject = UnityEditor.EditorUtility.InstanceIDToObject(instanceId) as GameObject;
 			
 			if (gameObject == null || icon == null) return;
 			

@@ -104,7 +104,7 @@ namespace Magicolo.AudioTools {
 			}
 		}
 				
-		public virtual SingleAudioItem GetSingleAudioItem(string soundName, GameObject source) {
+		public virtual SingleAudioItem GetSingleAudioItem(string soundName, object source) {
 			AudioInfo audioInfo = infoManager.GetAudioInfo(soundName);
 			AudioSource audioSource = GetAudioSource(audioInfo, source);
 			CoroutineHolder coroutineHolder = audioSource.GetOrAddComponent<CoroutineHolder>();
@@ -118,8 +118,13 @@ namespace Magicolo.AudioTools {
 			inactiveSingleAudioItems.Add(audioItem);
 			return audioItem;
 		}
-			
-		public virtual AudioSource GetAudioSource(AudioInfo audioInfo, GameObject source) {
+	
+		public virtual AudioSource GetAudioSource(AudioInfo audioInfo, object source) {
+			GameObject gameObject = GetGameObject(source);
+			return SetAudioSource(gameObject.GetOrAddComponent<AudioSource>(), audioInfo);
+		}
+					
+		public virtual AudioSource GetAudioSource(AudioInfo audioInfo, Vector3 source) {
 			GameObject gameObject = GetGameObject(source);
 			return SetAudioSource(gameObject.GetOrAddComponent<AudioSource>(), audioInfo);
 		}
@@ -132,12 +137,20 @@ namespace Magicolo.AudioTools {
 			return audioSource;
 		}
 	
-		public virtual GameObject GetGameObject(GameObject source) {
+		public virtual GameObject GetGameObject(object source) {
 			GameObject gameObject;
 			
 			gameObject = inactiveAudioObjects.Count == 0 ? new GameObject() : inactiveAudioObjects.Pop();
 			gameObject.transform.parent = player.transform;
-			gameObject.transform.position = source == null ? player.transform.position : source.transform.position;
+			gameObject.transform.Reset();
+			
+			if (source is GameObject) {
+				gameObject.transform.position = ((GameObject)source).transform.position;
+			}
+			else if (source is Vector3) {
+				gameObject.transform.position = ((Vector3)source);
+			}
+			
 			gameObject.SetActive(true);
 			Object.DontDestroyOnLoad(gameObject);
 			

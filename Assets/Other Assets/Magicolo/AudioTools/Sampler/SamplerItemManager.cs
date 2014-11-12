@@ -18,7 +18,7 @@ namespace Magicolo.AudioTools {
 			BuildInstrumentDict();
 		}
 
-		public AudioItem Play(string instrumentName, int note, float velocity, GameObject source, params AudioOption[] audioOptions) {
+		public AudioItem Play(string instrumentName, int note, float velocity, object source, params AudioOption[] audioOptions) {
 			SamplerInstrument instrument = GetInstrument(instrumentName);
 			
 			SingleAudioItem audioItem = GetSingleAudioItem(instrument, note, velocity, source);
@@ -41,7 +41,7 @@ namespace Magicolo.AudioTools {
 			return instrument;
 		}
 
-		public virtual SingleAudioItem GetSingleAudioItem(SamplerInstrument instrument, int note, float velocity, GameObject source) {
+		public virtual SingleAudioItem GetSingleAudioItem(SamplerInstrument instrument, int note, float velocity, object source) {
 			if (velocity > 0) {
 				SamplerInstrumentLayer layer = instrument.GetLayer(note, velocity);
 				SingleAudioItem audioItem = GetSingleAudioItem(layer.Name, source);
