@@ -45,6 +45,7 @@ public class PlayerMove : MonoBehaviour
 	private Quaternion screenMovementSpace;
 	private float airPressTime, groundedCount, curAccel, curDecel, curRotateSpeed, slope;
 	private Vector3 direction, moveDirection, screenMovementForward, screenMovementRight, movingObjSpeed;
+	public bool hasLanded = true;
 	
 	private CharacterMotor characterMotor;
 	//private EnemyAI enemyAI;
@@ -118,12 +119,12 @@ public class PlayerMove : MonoBehaviour
 		//if (!sliding )
 		//{
 			characterMotor.MoveTo (moveDirection, curAccel, 0.15f, true);
-			if( (animator.GetFloat("SoundWalk") > 0.1f || animator.GetFloat("SoundRun") > 0.1f ) && grounded )
-			{
+			//if( (animator.GetFloat("SoundWalk") > 0.1f || animator.GetFloat("SoundRun") > 0.1f ) && grounded )
+			//{
 				//audio.volume = 0.1f;
 				//audio.clip = stepSound;
 				//audio.Play ();
-			}
+			//}
 
 		 //}
 		if (rotateSpeed != 0 && direction.magnitude >= 0.15f)
@@ -221,6 +222,7 @@ public class PlayerMove : MonoBehaviour
 		{	
 
 			movingObjSpeed = Vector3.zero;
+			hasLanded = false;
 			//no none of the floorchecks hit anything, we must be in the air (or water)
 			return false;
 		}
@@ -233,10 +235,10 @@ public class PlayerMove : MonoBehaviour
 		groundedCount = (grounded) ? groundedCount += Time.deltaTime : 0f;
 		
 		//play landing sound
-		if(groundedCount < 0.25 && groundedCount != 0 && rigidbody.velocity.y < 1)
-		{
-			AudioMaster.PlayPlayerFootstep(AudioMaster.FootstepActions.Land);
-		}
+		//if(groundedCount < 0.25 && groundedCount != 0 && rigidbody.velocity.y < 1)
+		//{
+		//	AudioMaster.PlayPlayerFootstep(AudioMaster.FootstepActions.Land);
+		//}
 		
 		//if we press jump in the air, save the time
 		if (Input.GetButtonDown ("Jump") && !grounded)
@@ -258,6 +260,9 @@ public class PlayerMove : MonoBehaviour
 				else if (onJump == 2)
 						Jump (thirdJumpForce);
 			}
+			if (!hasLanded) {
+				LandingEvents ();
+			}
 		}
 	}
 	
@@ -273,5 +278,10 @@ public class PlayerMove : MonoBehaviour
 		rigidbody.velocity = new Vector3(rigidbody.velocity.x, 0f, rigidbody.velocity.z);
 		rigidbody.AddRelativeForce (jumpVelocity, ForceMode.Impulse);
 		airPressTime = 0f;
+	}
+
+	private void LandingEvents () {
+		AudioMaster.PlayPlayerFootstep(AudioMaster.FootstepActions.Land);
+		hasLanded = true;
 	}
 }
