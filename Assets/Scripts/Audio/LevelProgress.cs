@@ -6,8 +6,8 @@ public class LevelProgress: MonoBehaviour {
 	
 	public GlimpseCamera glimpseCam;
 
-	float[] glimpseDistance = new float[2];
 
+	float[] glimpseDistance = new float[2];
 	int countFrames = 0;
 	
 	void OnGUI() {
