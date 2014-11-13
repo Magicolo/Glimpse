@@ -41,6 +41,7 @@ public class PlayerMove : MonoBehaviour
 
 	public int onJump;
 	public bool grounded;
+	public ParticleEmitter landingFX;
 	private Transform[] floorCheckers;
 	private Quaternion screenMovementSpace;
 	private float airPressTime, groundedCount, curAccel, curDecel, curRotateSpeed, slope;
@@ -281,6 +282,7 @@ public class PlayerMove : MonoBehaviour
 	}
 
 	private void LandingEvents () {
+		landingFX.Emit ();
 		AudioMaster.PlayPlayerFootstep(AudioMaster.FootstepActions.Land);
 		hasLanded = true;
 	}
