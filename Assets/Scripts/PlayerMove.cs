@@ -270,12 +270,8 @@ public class PlayerMove : MonoBehaviour
 	//push player at jump force
 	public void Jump(Vector3 jumpVelocity)
 	{
-		//if(jumpSound)
-		//{
-			//audio.volume = 1;
-			//audio.clip = jumpSound;
-			//audio.Play ();
-		//}
+		AudioMaster.PlayPlayerFootstep(AudioMaster.FootstepActions.Jump);
+		
 		rigidbody.velocity = new Vector3(rigidbody.velocity.x, 0f, rigidbody.velocity.z);
 		rigidbody.AddRelativeForce (jumpVelocity, ForceMode.Impulse);
 		airPressTime = 0f;

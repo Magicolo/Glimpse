@@ -18,15 +18,17 @@ public class AudioMaster : MonoBehaviour {
 	
 	public PlayerAudio playerAudio;
 	
-	public FootstepActions footstepAction;
-	FootstepActions FootstepAction {
+	[SerializeField, PropertyField]
+	FootstepActions footstepAction;
+	public FootstepActions FootstepAction {
 		get {
 			return footstepAction;
 		}
 	}
 	
-	public FootstepSurfaces footstepSurface;
-	FootstepSurfaces FootstepSurface {
+	[SerializeField, PropertyField]
+	FootstepSurfaces footstepSurface;
+	public FootstepSurfaces FootstepSurface {
 		get {
 			footstepSurface = TextureReader.GetMainTexture();
 			return footstepSurface;
