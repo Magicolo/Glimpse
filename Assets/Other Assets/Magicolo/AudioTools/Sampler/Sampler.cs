@@ -104,7 +104,7 @@ public class Sampler : Magicolo.AudioTools.Player {
 	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="instrumentName"/> inspector.</param>
 	/// <returns>If the velocity > 0, the AudioItem that will let you control the note; Otherwise, the AudioItem representing the instrument.</returns>
 	public static AudioItem Play(string instrumentName, int note, float velocity, params AudioOption[] audioOptions) {
-		return Instance.itemManager.Play(instrumentName, note, velocity, null, audioOptions);
+		return Instance.itemManager.Play(instrumentName, note, velocity, Instance.listener.gameObject, audioOptions);
 	}
 
 	/// <summary>

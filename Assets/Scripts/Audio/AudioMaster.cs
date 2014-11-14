@@ -14,6 +14,7 @@ public class AudioMaster : MonoBehaviour {
 		Dirt,
 		Grass,
 		Stone,
+		Water
 	}
 	
 	public PlayerAudio playerAudio;
@@ -30,7 +31,7 @@ public class AudioMaster : MonoBehaviour {
 	FootstepSurfaces footstepSurface;
 	public FootstepSurfaces FootstepSurface {
 		get {
-			footstepSurface = TextureReader.GetMainTexture();
+			footstepSurface = TextureReader.GetFootstepSurface();
 			return footstepSurface;
 		}
 	}
@@ -46,8 +47,6 @@ public class AudioMaster : MonoBehaviour {
 			return instance;
 		}
 	}
-	
-	static AudioItem currentFootstepSound;
 	
 	public void Awake() {
 		libpdControls.Start();
@@ -67,11 +66,7 @@ public class AudioMaster : MonoBehaviour {
 	public static AudioItem PlayPlayerFootstep(FootstepActions footstepAction) {
 		Instance.footstepAction = footstepAction;
 		
-		if (currentFootstepSound != null) {
-			currentFootstepSound.Stop();
-		}
-		currentFootstepSound = AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
-		return currentFootstepSound;
+		return AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.transform.position);;
 	}
 	
 	public static AudioItem PlayDollUnseenSound(GameObject doll) {

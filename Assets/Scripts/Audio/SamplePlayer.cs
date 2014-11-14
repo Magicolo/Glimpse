@@ -15,13 +15,7 @@ public class SamplePlayer : MonoBehaviour {
 	
 	void Update() {
 		for (int i = notesToPlay.Count; i > 0; i--) {
-			Logger.Log("ReceiveList", notesToPlay[0], velocitiesToPlay[0]);
-			if (velocitiesToPlay[0] > 0) {
-				Logger.Log(Sampler.Play("Piano", notesToPlay.Pop(), velocitiesToPlay.Pop()));
-			}
-			else {
-				Sampler.Play("Piano", notesToPlay.Pop(), velocitiesToPlay.Pop());
-			}
+			Sampler.Play("Piano", notesToPlay.Pop(), velocitiesToPlay.Pop());
 		}
 	}
 	

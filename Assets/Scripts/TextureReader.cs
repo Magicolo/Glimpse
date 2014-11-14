@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using System.Collections;
 
@@ -7,6 +8,8 @@ public class TextureReader : MonoBehaviour {
 
 	public Terrain gameTerrain;
 	public Transform playerTransform;
+	
+	static AudioMaster.FootstepSurfaces lastSurface;
 	
 	static readonly Dictionary<int, AudioMaster.FootstepSurfaces> indexTextureDict = new Dictionary<int, AudioMaster.FootstepSurfaces> {
 		{ 0, AudioMaster.FootstepSurfaces.Dirt },
@@ -30,18 +33,10 @@ public class TextureReader : MonoBehaviour {
 		}
 	}
 	
-	void Update() {
-		// Debug.Log ( GetMainTexture () );
-	}
-
+	/// <summary>
+	/// Returns an array containing the relative mix of textures on the main terrain at this world position. The number of values in the array will equal the number of textures added to the terrain.
+	/// </summary>
 	public float[] GetTextureMix() {
-			
-		// returns an array containing the relative mix of textures
-		// on the main terrain at this world position.
-			
-		// The number of values in the array will equal the number
-		// of textures added to the terrain.
-			
 		Vector3 playerPosition = playerTransform.position;
 		TerrainData terrainData = gameTerrain.terrainData;
 		Vector3 terrainPos = gameTerrain.transform.position;
@@ -63,13 +58,11 @@ public class TextureReader : MonoBehaviour {
 			
 	}
 		
+	/// <summary>
+	/// Returns the zero-based index of the most dominant texture on the main terrain at this world position.
+	/// </summary>
 	public int GetMainTextureIndex() {
-			
-		// returns the zero-based index of the most dominant texture
-		// on the main terrain at this world position.
-			
 		float[] mix = GetTextureMix();
-			
 			
 		float maxMix = 0;
 		int maxIndex = 0;
@@ -83,14 +76,45 @@ public class TextureReader : MonoBehaviour {
 		}
 			
 		return maxIndex;
-			
 	}
 	
 	/// <summary>
-	/// Gets the most dominant texture name under the player.
+	/// Gets the most dominant texture under the player.
 	/// </summary>
 	/// <returns>The texture name.</returns>
-	public static AudioMaster.FootstepSurfaces GetMainTexture(){
-		return indexTextureDict[Instance.GetMainTextureIndex()];
+	public static AudioMaster.FootstepSurfaces GetFootstepSurface() {
+		RaycastHit hit;
+		Physics.Raycast(Instance.playerTransform.position, Vector3.down, out hit, 10, new LayerMask().AddToMask(29).Inverse());
+		
+		if (hit.collider != null) {
+			if (hit.collider.GetComponent<Terrain>() == Instance.gameTerrain){
+				lastSurface = indexTextureDict[Instance.GetMainTextureIndex()];
+			}
+			else if (hit.collider.name == "Water Physics") {
+				lastSurface = AudioMaster.FootstepSurfaces.Water;
+			}
+			else if (hit.collider.name == "Platform") {
+				lastSurface = AudioMaster.FootstepSurfaces.Stone;
+			}
+			else if (hit.collider.name == "Side Helper") {
+				lastSurface = AudioMaster.FootstepSurfaces.Stone;
+			}
+			else if (hit.collider.name == "Collision") {
+				lastSurface = AudioMaster.FootstepSurfaces.Dirt;
+			}
+			else if (hit.collider.name == "Ramp") {
+				lastSurface = AudioMaster.FootstepSurfaces.Dirt;
+			}
+			else if (hit.collider.name.Contains("Rock")) {
+				lastSurface = AudioMaster.FootstepSurfaces.Stone;
+			}
+			else if (hit.collider.name == "Collectible Target") {
+				lastSurface = AudioMaster.FootstepSurfaces.Stone;
+			}
+			else if (hit.collider.name == "Collectible 1") {
+				lastSurface = AudioMaster.FootstepSurfaces.Stone;
+			}
+		}
+		return lastSurface;
 	}
 }
