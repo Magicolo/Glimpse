@@ -278,6 +278,7 @@ namespace Magicolo.AudioTools {
 
 		void ShowAudioSource() {
 			currentSubContainer.AudioSetup = EditorGUILayout.ObjectField("Source".ToGUIContent(), currentSubContainer.AudioSetup, typeof(AudioSetup), true) as AudioSetup;
+			ContextMenu(new []{ "Clear".ToGUIContent() }, new GenericMenu.MenuFunction2[]{ OnAudioSourceCleared }, new object[]{ currentSubContainer });
 			
 			currentClip = currentSubContainer.AudioSetup == null ? null : currentSubContainer.AudioSetup.audioInfo.Clip;
 			
@@ -286,6 +287,14 @@ namespace Magicolo.AudioTools {
 			}
 		}
 
+		void OnAudioSourceCleared(object data){
+			AudioSubContainer subContainer = data as AudioSubContainer;
+			subContainer.AudioSetup = null;
+			subContainer.audioInfo = null;
+			subContainer.audioSetupName = "";
+			serializedObject.Update();
+		}
+		
 		void ShowSampler() {
 			if (sampler == null) {
 				EditorGUILayout.HelpBox("No sampler was found in the scene.", MessageType.Warning);

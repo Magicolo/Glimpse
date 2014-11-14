@@ -8,24 +8,30 @@ public class SamplePlayer : MonoBehaviour {
 	readonly List<int> notesToPlay = new List<int>();
 	readonly List<float> velocitiesToPlay = new List<float>();
 	
-	void Awake(){
+	void Awake() {
 		LibPD.Subscribe("music_piano_midi");
 		LibPD.List += ReceiveList;
 	}
 	
-	void Update(){
+	void Update() {
 		for (int i = notesToPlay.Count; i > 0; i--) {
-			Sampler.Play("Piano", notesToPlay.Pop(), velocitiesToPlay.Pop());
+//			Logger.Log("ReceiveList", notesToPlay[0], velocitiesToPlay[0]);
+			if (velocitiesToPlay[0] > 0) {
+//				Logger.Log(Sampler.Play("Piano", notesToPlay.Pop(), velocitiesToPlay.Pop()));
+			}
+			else {
+//				Sampler.Play("Piano", notesToPlay.Pop(), velocitiesToPlay.Pop());
+			}
 		}
 	}
 	
-	void OnApplicationQuit(){
+	void OnApplicationQuit() {
 		LibPD.List -= ReceiveList;
 		LibPD.Unsubscribe("music_piano_midi");
 	}
 	
 	void ReceiveList(string sendName, object[] values) {
-		if (sendName == "music_piano_midi"){
+		if (sendName == "music_piano_midi") {
 			notesToPlay.Add((int)(float)values[0]);
 			velocitiesToPlay.Add((float)values[1]);
 		}

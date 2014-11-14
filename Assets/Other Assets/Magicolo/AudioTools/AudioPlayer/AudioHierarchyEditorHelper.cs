@@ -101,6 +101,14 @@ namespace Magicolo.AudioTools {
 			}
 		}
 
+		public override void OnSelectionChanged() {
+			base.OnSelectionChanged();
+			
+			if (!Application.isPlaying && selection.Length == 1 && selection[0] == audioPlayer.gameObject){
+				audioPlayer.hierarchyManager.UpdateHierarchy();
+			}
+		}
+		
 		public override void OnUpdate() {
 			base.OnUpdate();
 			

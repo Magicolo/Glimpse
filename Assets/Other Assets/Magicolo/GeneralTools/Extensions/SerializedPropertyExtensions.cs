@@ -54,55 +54,55 @@ public static class SerializedPropertyExtensions {
 	public static void SetValue(this SerializedProperty property, object value) {
 		switch (property.propertyType) {
 			case SerializedPropertyType.Integer:
-				property.intValue = (int)value;
+				property.intValue = value == null ? default(int) : (int)value;
 				break;
 			case SerializedPropertyType.Boolean:
-				property.boolValue = (bool)value;
+				property.boolValue = value == null ? default(bool) : (bool)value;
 				break;
 			case SerializedPropertyType.Float:
-				property.floatValue = (float)value;
+				property.floatValue = value == null ? default(float) : (float)value;
 				break;
 			case SerializedPropertyType.String:
-				property.stringValue = (string)value;
+				property.stringValue = value == null ? default(string) : (string)value;
 				break;
 			case SerializedPropertyType.Color:
-				property.colorValue = (Color)value;
+				property.colorValue = value == null ? default(Color) : (Color)value;
 				break;
 			case SerializedPropertyType.ObjectReference:
-				property.objectReferenceValue = (Object)value;
+				property.objectReferenceValue = value == null ? default(Object) : (Object)value;
 				break;
 			case SerializedPropertyType.LayerMask:
-				property.intValue = (int)value;
+				property.intValue = value == null ? default(int) : (int)value;
 				break;
 			case SerializedPropertyType.Enum:
-				property.enumValueIndex = (int)value;
+				property.enumValueIndex = value == null ? default(int) : (int)value;
 				break;
 			case SerializedPropertyType.Vector2:
-				property.vector2Value = (Vector2)value;
+				property.vector2Value = value == null ? default(Vector2) : (Vector2)value;
 				break;
 			case SerializedPropertyType.Vector3:
-				property.vector3Value = (Vector3)value;
+				property.vector3Value = value == null ? default(Vector3) : (Vector3)value;
 				break;
 			case SerializedPropertyType.Vector4:
-				property.vector4Value = (Vector4)value;
+				property.vector4Value = value == null ? default(Vector4) : (Vector4)value;
 				break;
 			case SerializedPropertyType.Quaternion:
-				property.quaternionValue = (Quaternion)value;
+				property.quaternionValue = value == null ? default(Quaternion) : (Quaternion)value;
 				break;
 			case SerializedPropertyType.Rect:
-				property.rectValue = (Rect)value;
+				property.rectValue = value == null ? default(Rect) : (Rect)value;
 				break;
 			case SerializedPropertyType.ArraySize:
-				property.intValue = (int)value;
+				property.intValue = value == null ? default(int) : (int)value;
 				break;
 			case SerializedPropertyType.Character:
-				property.intValue = (int)value;
+				property.intValue = value == null ? default(int) : (int)value;
 				break;
 			case SerializedPropertyType.AnimationCurve:
-				property.animationCurveValue = (AnimationCurve)value;
+				property.animationCurveValue = value == null ? default(AnimationCurve) : (AnimationCurve)value;
 				break;
 			case SerializedPropertyType.Bounds:
-				property.boundsValue = (Bounds)value;
+				property.boundsValue = value == null ? default(Bounds) : (Bounds)value;
 				break;
 		}
 	}

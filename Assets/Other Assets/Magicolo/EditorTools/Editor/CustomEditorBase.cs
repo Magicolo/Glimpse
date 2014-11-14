@@ -18,6 +18,7 @@ namespace Magicolo.EditorTools {
 		public delegate void DeleteCallback(SerializedProperty arrayProperty, int indexToRemove);
 		public delegate void DropCallback<T>(T droppedObject);
 		public delegate void ReorderCallback(SerializedProperty arrayProperty, int sourceIndex, int targetIndex);
+		public delegate void ClearCallback(SerializedProperty property);
 		
 		public Event currentEvent;
 		public bool deleteBreak;
@@ -224,24 +225,24 @@ namespace Magicolo.EditorTools {
 			DropFoldout<T>(showable, label, null, false, dropCallback);
 		}
 		
-		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, int overrideArraySize, AddCallback addCallback = null) {
-			label.text += string.Format(" ({0})", GetArraySize(property, overrideArraySize));
+		public bool AddFoldOut(SerializedProperty arrayProperty, IShowable showable, GUIContent label, GUIStyle style, int overrideArraySize, AddCallback addCallback = null) {
+			label.text += string.Format(" ({0})", GetArraySize(arrayProperty, overrideArraySize));
 			
 			EditorGUILayout.BeginHorizontal();
 		
-			if (showable.Showing && GetArraySize(property, overrideArraySize) == 0) {
+			if (showable.Showing && GetArraySize(arrayProperty, overrideArraySize) == 0) {
 				showable.Showing = false;
 			}
 		
 			Foldout(showable, label, style);
 		
 			bool pressed = false;
-			if (showable.Showing && GetArraySize(property, overrideArraySize) == 0 && !Application.isPlaying) {
-				AddToArray(property, addCallback);
+			if (showable.Showing && GetArraySize(arrayProperty, overrideArraySize) == 0 && !Application.isPlaying) {
+				AddToArray(arrayProperty, addCallback);
 				pressed = true;
 			}
 		
-			if (AddButton(property, addCallback)) {
+			if (AddButton(arrayProperty, addCallback)) {
 				pressed = true;
 			}
 		
@@ -249,36 +250,36 @@ namespace Magicolo.EditorTools {
 			return pressed;
 		}
 	
-		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, int overrideArraySize, AddCallback addCallback = null) {
-			return AddFoldOut(property, showable, label, null, overrideArraySize, addCallback);
+		public bool AddFoldOut(SerializedProperty arrayProperty, IShowable showable, GUIContent label, int overrideArraySize, AddCallback addCallback = null) {
+			return AddFoldOut(arrayProperty, showable, label, null, overrideArraySize, addCallback);
 		}
 	
-		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, AddCallback addCallback = null) {
-			return AddFoldOut(property, showable, label, style, -1, addCallback);
+		public bool AddFoldOut(SerializedProperty arrayProperty, IShowable showable, GUIContent label, GUIStyle style, AddCallback addCallback = null) {
+			return AddFoldOut(arrayProperty, showable, label, style, -1, addCallback);
 		}
 	
-		public bool AddFoldOut(SerializedProperty property, IShowable showable, GUIContent label, AddCallback addCallback = null) {
-			return AddFoldOut(property, showable, label, null, -1, addCallback);
+		public bool AddFoldOut(SerializedProperty arrayProperty, IShowable showable, GUIContent label, AddCallback addCallback = null) {
+			return AddFoldOut(arrayProperty, showable, label, null, -1, addCallback);
 		}
 		
-		public bool AddFoldOut(SerializedProperty property, GUIContent label, GUIStyle style, int overrideArraySize, AddCallback addCallback = null) {
-			label.text += string.Format(" ({0})", GetArraySize(property, overrideArraySize));
+		public bool AddFoldOut(SerializedProperty arrayProperty, GUIContent label, GUIStyle style, int overrideArraySize, AddCallback addCallback = null) {
+			label.text += string.Format(" ({0})", GetArraySize(arrayProperty, overrideArraySize));
 		
 			EditorGUILayout.BeginHorizontal();
 		
-			if (property.isExpanded && GetArraySize(property, overrideArraySize) == 0) {
-				property.isExpanded = false;
+			if (arrayProperty.isExpanded && GetArraySize(arrayProperty, overrideArraySize) == 0) {
+				arrayProperty.isExpanded = false;
 			}
 			
-			Foldout(property, label, style);
+			Foldout(arrayProperty, label, style);
 		
 			bool pressed = false;
-			if (property.isExpanded && GetArraySize(property, overrideArraySize) == 0 && !Application.isPlaying) {
-				AddToArray(property, addCallback);
+			if (arrayProperty.isExpanded && GetArraySize(arrayProperty, overrideArraySize) == 0 && !Application.isPlaying) {
+				AddToArray(arrayProperty, addCallback);
 				pressed = true;
 			}
 		
-			if (AddButton(property, addCallback)) {
+			if (AddButton(arrayProperty, addCallback)) {
 				pressed = true;
 			}
 		
@@ -286,21 +287,21 @@ namespace Magicolo.EditorTools {
 			return pressed;
 		}
 	
-		public bool AddFoldOut(SerializedProperty property, GUIContent label, int overrideArraySize, AddCallback addCallback = null) {
-			return AddFoldOut(property, label, null, overrideArraySize, addCallback);
+		public bool AddFoldOut(SerializedProperty arrayProperty, GUIContent label, int overrideArraySize, AddCallback addCallback = null) {
+			return AddFoldOut(arrayProperty, label, null, overrideArraySize, addCallback);
 		}
 	
-		public bool AddFoldOut(SerializedProperty property, GUIContent label, GUIStyle style, AddCallback addCallback = null) {
-			return AddFoldOut(property, label, style, -1, addCallback);
+		public bool AddFoldOut(SerializedProperty arrayProperty, GUIContent label, GUIStyle style, AddCallback addCallback = null) {
+			return AddFoldOut(arrayProperty, label, style, -1, addCallback);
 		}
 	
-		public bool AddFoldOut(SerializedProperty property, GUIContent label, AddCallback addCallback = null) {
-			return AddFoldOut(property, label, null, -1, addCallback);
+		public bool AddFoldOut(SerializedProperty arrayProperty, GUIContent label, AddCallback addCallback = null) {
+			return AddFoldOut(arrayProperty, label, null, -1, addCallback);
 		}
 
-		public bool AddFoldOut<T>(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, IShowable showable, GUIContent label, GUIStyle style, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
 			Rect dropArea = EditorGUILayout.BeginHorizontal();
-			bool pressed = AddFoldOut(property, showable, label, style, overrideArraySize, addCallback);
+			bool pressed = AddFoldOut(arrayProperty, showable, label, style, overrideArraySize, addCallback);
 			EditorGUILayout.EndHorizontal();
 			
 			DropArea<T>(dropArea, true, dropCallback);
@@ -308,12 +309,12 @@ namespace Magicolo.EditorTools {
 			return pressed;
 		}
 		
-		public bool AddFoldOut<T>(SerializedProperty property, IShowable showable, GUIContent label, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
-			return AddFoldOut<T>(property, showable, label, null, overrideArraySize, dropCallback, addCallback);
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, IShowable showable, GUIContent label, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(arrayProperty, showable, label, null, overrideArraySize, dropCallback, addCallback);
 		}
 		
-		public bool AddFoldOut<T>(SerializedProperty property, IShowable showable, GUIContent label, GUIStyle style, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
-			return AddFoldOut<T>(property, showable, label, style, -1, dropCallback, addCallback);
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, IShowable showable, GUIContent label, GUIStyle style, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(arrayProperty, showable, label, style, -1, dropCallback, addCallback);
 		}
 		
 		public bool AddFoldOut<T>(SerializedProperty arrayProperty, IShowable showable, GUIContent label, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
@@ -330,8 +331,8 @@ namespace Magicolo.EditorTools {
 			return pressed;
 		}
 				
-		public bool AddFoldOut<T>(SerializedProperty property, GUIContent label, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
-			return AddFoldOut<T>(property, label, null, overrideArraySize, dropCallback, addCallback);
+		public bool AddFoldOut<T>(SerializedProperty arrayProperty, GUIContent label, int overrideArraySize, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
+			return AddFoldOut<T>(arrayProperty, label, null, overrideArraySize, dropCallback, addCallback);
 		}
 		
 		public bool AddFoldOut<T>(SerializedProperty arrayProperty, GUIContent label, GUIStyle style, DropCallback<T> dropCallback, AddCallback addCallback = null) where T : Object {
@@ -394,7 +395,7 @@ namespace Magicolo.EditorTools {
 		#endregion
 
 		#region Miscellaneous
-		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, bool allowSceneObjects, params GUILayoutOption[] options) where T : Object {
+		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, bool allowSceneObjects, ClearCallback clearCallback, params GUILayoutOption[] options) where T : Object {
 			EditorGUI.BeginDisabledGroup(Application.isPlaying && disableOnPlay);
 			EditorGUILayout.BeginHorizontal();
 			
@@ -404,16 +405,30 @@ namespace Magicolo.EditorTools {
 				property.serializedObject.ApplyModifiedProperties();
 			}
 			
+			ContextMenu(new []{ "Clear".ToGUIContent() }, new GenericMenu.MenuFunction2[]{ OnPropertyCleared }, new object[]{ new ContextMenuClearData(property, clearCallback) });
+			
 			EditorGUILayout.EndHorizontal();
 			EditorGUI.EndDisabledGroup();
 		}
+		
+		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, bool allowSceneObjects, params GUILayoutOption[] options) where T : Object {
+			PropertyObjectField<T>(property, label, disableOnPlay, allowSceneObjects, null, options);
+		}
+					
+		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, ClearCallback clearCallback, params GUILayoutOption[] options) where T : Object {
+			PropertyObjectField<T>(property, label, disableOnPlay, true, clearCallback, options);
+		}
 	
 		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, bool disableOnPlay, params GUILayoutOption[] options) where T : Object {
-			PropertyObjectField<T>(property, label, disableOnPlay, true, options);
+			PropertyObjectField<T>(property, label, disableOnPlay, true, null, options);
+		}
+	
+		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, ClearCallback clearCallback, params GUILayoutOption[] options) where T : Object {
+			PropertyObjectField<T>(property, label, false, true, clearCallback, options);
 		}
 	
 		public void PropertyObjectField<T>(SerializedProperty property, GUIContent label, params GUILayoutOption[] options) where T : Object {
-			PropertyObjectField<T>(property, label, false, true, options);
+			PropertyObjectField<T>(property, label, false, true, null, options);
 		}
 	
 		public void MinMaxSlider(SerializedProperty minProperty, SerializedProperty maxProperty, float min, float max, bool disableOnPlay) {
@@ -523,6 +538,44 @@ namespace Magicolo.EditorTools {
 			DropArea<T>(EditorGUI.IndentedRect(GUILayoutUtility.GetLastRect()), false, dropCallback);
 		}
 
+		public void ContextMenu(Rect contextArea, GUIContent[] options, GenericMenu.MenuFunction[] callbacks) {
+			if (currentEvent.type == EventType.ContextClick) {
+				if (contextArea.Contains(currentEvent.mousePosition)) {
+					GenericMenu menu = new GenericMenu();
+					
+					for (int i = 0; i < options.Length; i++) {
+						menu.AddItem(options[i], false, callbacks[i]);
+					}
+					menu.ShowAsContext();
+					
+					currentEvent.Use();
+				}
+			}
+		}
+				
+		public void ContextMenu(GUIContent[] options, GenericMenu.MenuFunction[] callbacks) {
+			ContextMenu(EditorGUI.IndentedRect(GUILayoutUtility.GetLastRect()), options, callbacks);
+		}
+		
+		public void ContextMenu(Rect contextArea, GUIContent[] options, GenericMenu.MenuFunction2[] callbacks, object[] data) {
+			if (currentEvent.type == EventType.ContextClick) {
+				if (contextArea.Contains(currentEvent.mousePosition)) {
+					GenericMenu menu = new GenericMenu();
+					
+					for (int i = 0; i < options.Length; i++) {
+						menu.AddItem(options[i], false, callbacks[i], data[i]);
+					}
+					menu.ShowAsContext();
+					
+					currentEvent.Use();
+				}
+			}
+		}
+				
+		public void ContextMenu(GUIContent[] options, GenericMenu.MenuFunction2[] callbacks, object[] data) {
+			ContextMenu(EditorGUI.IndentedRect(GUILayoutUtility.GetLastRect()), options, callbacks, data);
+		}
+		
 		public void Reorderable(SerializedProperty arrayProperty, int index, Rect dragArea, ReorderCallback reorderCallback = null) {
 			string arrayIdentifier = arrayProperty.name + arrayProperty.arraySize + arrayProperty.depth + arrayProperty.propertyPath + arrayProperty.propertyType;
 			SerializedProperty selectedArray = DragAndDrop.GetGenericData(arrayIdentifier) as SerializedProperty;
@@ -654,6 +707,33 @@ namespace Magicolo.EditorTools {
 			deleteBreak = true;
 		}
 
+		public void Clear(SerializedProperty property, ClearCallback clearCallback = null) {
+			if (clearCallback == null) {
+				if (property.isArray) {
+					ClearArray(property);
+				}
+				else {
+					property.SetValue(null);
+					property.serializedObject.ApplyModifiedProperties();
+					EditorUtility.SetDirty(property.serializedObject.targetObject);
+				}
+			}
+			else {
+				clearCallback(property);
+			}
+		}
+		
+		public void ClearArray(SerializedProperty arrayProperty, ClearCallback clearCallback = null) {
+			if (clearCallback == null) {
+				arrayProperty.ClearArray();
+				arrayProperty.serializedObject.ApplyModifiedProperties();
+				EditorUtility.SetDirty(arrayProperty.serializedObject.targetObject);
+			}
+			else {
+				clearCallback(arrayProperty);
+			}
+		}
+		
 		public void ReorderArray(SerializedProperty arrayProperty, int soureceIndex, int targetIndex, ReorderCallback reorderCallback = null) {
 			if (reorderCallback == null) {
 				arrayProperty.MoveArrayElement(soureceIndex, targetIndex);
@@ -673,5 +753,22 @@ namespace Magicolo.EditorTools {
 			return arraySize;
 		}
 		#endregion
+	
+			
+		void OnPropertyCleared(object data) {
+			ContextMenuClearData contextData = data as ContextMenuClearData;
+			Clear(contextData.property, contextData.clearCallback);
+		}
+
+		public class ContextMenuClearData {
+			
+			public readonly SerializedProperty property;
+			public readonly ClearCallback clearCallback;
+			
+			public ContextMenuClearData(SerializedProperty property, ClearCallback clearCallback) {
+				this.property = property;
+				this.clearCallback = clearCallback;
+			}
+		}
 	}
 }

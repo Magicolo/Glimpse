@@ -96,7 +96,7 @@ public static class ComponentExtensions {
 			toRemove.Remove();
 		}
 	}
-	
+
 	public static T GetClosest<T>(this Component source, IList<T> targets) where T : Component {
 		float closestDistance = 1000000;
 		T closestTarget = default(T);

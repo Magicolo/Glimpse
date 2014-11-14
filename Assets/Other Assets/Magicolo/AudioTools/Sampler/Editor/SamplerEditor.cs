@@ -191,6 +191,7 @@ namespace Magicolo.AudioTools {
 				}
 				else {
 					currentLayer.AudioSetup = EditorGUILayout.ObjectField(GUIContent.none, currentLayer.AudioSetup, typeof(AudioSetup), true, GUILayout.MaxWidth(Screen.width), GUILayout.MinWidth(36), GUILayout.Height(16)) as AudioSetup;
+					ContextMenu(new []{ "Clear".ToGUIContent() }, new GenericMenu.MenuFunction2[]{ OnLayerCleared }, new object[]{ currentLayer });
 				}
 				EditorGUI.EndDisabledGroup();
 		
@@ -211,6 +212,13 @@ namespace Magicolo.AudioTools {
 			}
 		}
 	
+		void OnLayerCleared(object data) {
+			SamplerInstrumentLayer layer = data as SamplerInstrumentLayer;
+			layer.AudioSetup = null;
+			layer.audioSetupName = "";
+			serializedObject.Update();
+		}
+		
 		GUIStyle GetStateColorStyle() {
 			GUIStyle style = new GUIStyle("foldout");
 			style.fontStyle = FontStyle.Bold;
@@ -247,7 +255,6 @@ namespace Magicolo.AudioTools {
 				style.active.textColor = textColor;
 				style.onActive.textColor = textColor;
 			}
-		
 			return style;
 		}
 	}

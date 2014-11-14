@@ -107,6 +107,7 @@ public class PDPlayerEditor : CustomEditorBase {
 			EditorGUI.indentLevel += 1;
 			
 			PropertyObjectField<GameObject>(moduleProperty.FindPropertyRelative("source"), new GUIContent("Source", "The source around which the module will be spatialized.\nIf left empty, the module will not be spatialized or attenuated."));
+			ContextMenu(new []{ "Clear".ToGUIContent() }, new GenericMenu.MenuFunction2[]{ OnSourceCleared }, new object[]{ currentModule });
 			EditorGUILayout.PropertyField(moduleProperty.FindPropertyRelative("volumeRolloff"), new GUIContent("Volume Rolloff", "The curve of the distance attenuation."));
 			EditorGUILayout.PropertyField(moduleProperty.FindPropertyRelative("minDistance"), new GUIContent("Min Distance", "Distance at which the module starts to be attenuated."));
 			moduleProperty.FindPropertyRelative("minDistance").Clamp(0, moduleProperty.FindPropertyRelative("maxDistance").floatValue);
@@ -119,6 +120,12 @@ public class PDPlayerEditor : CustomEditorBase {
 		EndBox();
 	}
 
+	void OnSourceCleared(object data){
+		PDEditorModule module = data as PDEditorModule;
+		module.Source = null;
+		serializedObject.Update();
+	}
+	
 	GUIStyle GetStateColorStyle() {
 		GUIStyle style = new GUIStyle("foldout");
 		style.fontStyle = FontStyle.Bold;

@@ -17,15 +17,27 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
+		public string audioSetupName;
 		[SerializeField]
 		AudioSetup audioSetup;
 		public AudioSetup AudioSetup {
 			get {
+				if (audioSetup == null && !string.IsNullOrEmpty(audioSetupName)) {
+					GameObject gameObject = GameObject.Find(audioSetupName);
+					audioSetup = gameObject == null ? null : gameObject.GetComponent<AudioSetup>();
+				}
 				return audioSetup;
 			}
 			set {
 				audioSetup = value;
-				clip = audioSetup == null ? null : audioSetup.Clip;
+				
+				if (audioSetup != null) {
+					clip = audioSetup.Clip;
+					audioSetupName = audioSetup.name;
+				}
+//				else {
+//					audioSetupName = "";
+//				}
 			}
 		}
 		public AudioClip referenceClip;

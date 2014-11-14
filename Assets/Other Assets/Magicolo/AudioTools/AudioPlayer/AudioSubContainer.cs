@@ -52,12 +52,19 @@ namespace Magicolo.AudioTools {
 		public Types type;
 		
 		// Audio Source
+		public string audioSetupName;
 		[SerializeField]
 		AudioSetup audioSetup;
 		public AudioSetup AudioSetup {
 			get {
-				if (audioSetup == null && audioInfo != null) {
-					audioSetup = audioInfo.AudioSetup;
+				if (audioSetup == null) {
+					if (audioInfo != null) {
+						audioSetup = audioInfo.AudioSetup;
+					}
+					else if (!string.IsNullOrEmpty(audioSetupName)){
+						GameObject gameObject = GameObject.Find(audioSetupName);
+						audioSetup = gameObject == null ? null : gameObject.GetComponent<AudioSetup>();
+					}
 				}
 				return audioSetup;
 			}
@@ -65,6 +72,7 @@ namespace Magicolo.AudioTools {
 				audioSetup = value;
 				if (audioSetup != null) {
 					audioInfo = audioSetup.audioInfo;
+					audioSetupName = audioSetup.name;
 				}
 			}
 		}
