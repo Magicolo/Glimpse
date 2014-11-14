@@ -4,8 +4,6 @@ using System.Collections;
 [System.Serializable]
 public class Wind {
 
-	public GlimpseCamera glimpseCam;
-
 	//wind parameters
 	[SerializeField, PropertyField]
 	float wind_BG_freqBase = 100.0F;
