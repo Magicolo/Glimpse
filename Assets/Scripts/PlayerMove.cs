@@ -278,7 +278,7 @@ public class PlayerMove : MonoBehaviour
 	}
 
 	private void LandingEvents () {
-		landingFX.Emit ();
+		// landingFX.Emit ();
 		AudioMaster.PlayPlayerFootstep(AudioMaster.FootstepActions.Land);
 		hasLanded = true;
 	}
