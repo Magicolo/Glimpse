@@ -98,13 +98,12 @@ namespace Magicolo.AudioTools {
 			this.pdPlayer = pdPlayer;
 		}
 		
-		public void Initialize(float volume) {
+		public void Initialize() {
 			pdPlayer.communicator.SendValue(ModuleName + "_HRFLeft", 20000);
 			pdPlayer.communicator.SendValue(ModuleName + "_HRFRight", 20000);
 			pdPlayer.communicator.SendValue(ModuleName + "_PanLeft", 1);
 			pdPlayer.communicator.SendValue(ModuleName + "_PanRight", 1);
 			pdPlayer.communicator.SendValue(ModuleName + "_Attenuation", 1);
-			pdPlayer.communicator.SendValue(ModuleName + "_Volume", volume);
 		}
 		
 		public void Update() {
@@ -149,15 +148,13 @@ namespace Magicolo.AudioTools {
 		}
 	
 		public Vector3 GetSourcePosition() {
-			Vector3 sourcePosition = pdPlayer.transform.position;
+			Vector3 sourcePosition = pdPlayer.listener.transform.position;
 			
-			if (source != null) {
-				if (source is GameObject) {
-					sourcePosition = ((GameObject)source).transform.position;
-				}
-				else if (source is Vector3) {
-					sourcePosition = ((Vector3)source);
-				}
+			if (Source as GameObject != null) {
+				sourcePosition = ((GameObject)Source).transform.position;
+			}
+			else if (Source is Vector3) {
+				sourcePosition = ((Vector3)Source);
 			}
 			return sourcePosition;
 		}
@@ -165,12 +162,13 @@ namespace Magicolo.AudioTools {
 		public bool CheckForChanges() {
 			bool changed = false;
 			
-			if ((Source is GameObject && (((GameObject)Source).transform.hasChanged) || pdPlayer.listener.transform.hasChanged)) {
-				changed = true;
-				pdPlayer.SetTransformHasChanged(((GameObject)Source).transform, false);
-				pdPlayer.SetTransformHasChanged(pdPlayer.listener.transform, false);
+			if (Source as GameObject != null) {
+				if (((GameObject)Source).transform.hasChanged || pdPlayer.listener.transform.hasChanged) {
+					changed = true;
+					pdPlayer.SetTransformHasChanged(((GameObject)Source).transform, false);
+					pdPlayer.SetTransformHasChanged(pdPlayer.listener.transform, false);
+				}
 			}
-			
 			return changed;
 		}
 	}

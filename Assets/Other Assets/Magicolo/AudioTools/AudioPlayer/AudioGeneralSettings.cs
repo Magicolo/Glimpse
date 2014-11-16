@@ -11,7 +11,6 @@ namespace Magicolo.AudioTools {
 		float masterVolume = 1;
 		public float MasterVolume {
 			get {
-				masterVolume = AudioListener.volume;
 				return masterVolume;
 			}
 			set {
@@ -33,7 +32,7 @@ namespace Magicolo.AudioTools {
 		AudioPlayer audioPlayer;
 		public AudioPlayer AudioPlayer {
 			get {
-				if (audioPlayer == null){
+				if (audioPlayer == null) {
 					Debug.LogError("No AudioPlayer found in the scene.");
 				}
 				return audioPlayer;
@@ -43,7 +42,7 @@ namespace Magicolo.AudioTools {
 		PDPlayer pdPlayer;
 		public PDPlayer PdPlayer {
 			get {
-				if (pdPlayer == null){
+				if (pdPlayer == null) {
 					Debug.LogError("No PdPlayer found in the scene.");
 				}
 				return pdPlayer;
@@ -53,7 +52,7 @@ namespace Magicolo.AudioTools {
 		Sampler sampler;
 		public Sampler Sampler {
 			get {
-				if (sampler == null){
+				if (sampler == null) {
 					Debug.LogError("No Sampler found in the scene.");
 				}
 				return sampler;
@@ -64,6 +63,10 @@ namespace Magicolo.AudioTools {
 			this.audioPlayer = audioPlayer;
 			pdPlayer = pdPlayer ?? Object.FindObjectOfType<PDPlayer>();
 			sampler = sampler ?? Object.FindObjectOfType<Sampler>();
+			
+			if (Application.isPlaying) {
+				SetMasterVolume(MasterVolume);
+			}
 		}
 	
 		public virtual void SetMasterVolume(float targetVolume, float time) {

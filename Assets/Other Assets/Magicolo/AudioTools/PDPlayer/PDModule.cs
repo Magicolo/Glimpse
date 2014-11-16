@@ -33,7 +33,8 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public void Initialize() {
-			spatializer.Initialize(Volume);
+			spatializer.Initialize();
+			UpdateVolume();
 		}
 		
 		public override void Update() {
@@ -47,7 +48,7 @@ namespace Magicolo.AudioTools {
 
 		protected override void UpdateVolume() {
 			base.UpdateVolume();
-			
+
 			pdPlayer.communicator.SendValue(Name + "_Volume", Volume);
 		}
 		

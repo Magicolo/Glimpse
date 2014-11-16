@@ -40,6 +40,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			if (module.State != AudioStates.Playing) {
+				module.Initialize();
 				module.Play();
 			}
 			

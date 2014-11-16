@@ -22,7 +22,6 @@ namespace Magicolo.AudioTools {
 				string path = GetPatchPath(patchName);
 				patches[Path.GetFileName(patchName)] = LibPD.OpenPatch(path);
 				pdPlayer.communicator.Initialize();
-				pdPlayer.itemManager.Initialize();
 			}
 			LibPD.ComputeAudio(true);
 			pdPlayer.communicator.SendValue("UMasterVolume", pdPlayer.generalSettings.MasterVolume);
