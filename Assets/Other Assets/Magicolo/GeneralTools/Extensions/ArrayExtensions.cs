@@ -54,7 +54,7 @@ public static class ArrayExtensions {
 		return array[UnityEngine.Random.Range(0, array.Count)];
 	}
 	
-	public static void Move<T>(this IList<T> array, int sourceIndex, int targetIndex){
+	public static void Move<T>(this IList<T> array, int sourceIndex, int targetIndex) {
 		int delta = Mathf.Abs(targetIndex - sourceIndex);
 		int direction = (targetIndex - sourceIndex) / delta;
 		
@@ -77,6 +77,20 @@ public static class ArrayExtensions {
 			slicedArray[i] = array[i + startIndex];
 		}
 		return slicedArray;
+	}
+	
+	public static bool ContentEquals(this IList array, IList otherArray) {
+		if (otherArray == null || array.Count != otherArray.Count){
+			return false;
+		}
+		
+		for (int i = 0; i < array.Count; i++) {
+			if (!Equals(array[i], otherArray[i])) {
+				Logger.Log(array[i], otherArray[i]);
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public static int[] ToIntArray<T>(this IList<T> array) {
@@ -110,7 +124,7 @@ public static class ArrayExtensions {
 		}
 		return stringArray;
 	}
-	
+
 	public static AudioOption GetOptionOfType(this AudioOption[] audioOptions, AudioOption.OptionTypes type) {
 		AudioOption optionOfType = null;
 		

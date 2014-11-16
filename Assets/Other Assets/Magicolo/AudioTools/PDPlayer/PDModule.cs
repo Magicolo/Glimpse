@@ -56,7 +56,7 @@ namespace Magicolo.AudioTools {
 			
 			pdPlayer.communicator.SendValue(Name + "_Pitch", Pitch);
 		}
-		
+
 		public override void Play(params AudioOption[] audioOptions) {
 			if (audioOptions.Length == 0 || !TryAddDelayedAction(AudioAction.ActionTypes.Play, audioOptions)) {
 				base.Play(audioOptions);

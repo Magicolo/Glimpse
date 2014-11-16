@@ -25,6 +25,9 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 		}
 	}
 	
+	PDPlayer() {
+	}
+	
 	#region Components
 	public PDEditorHelper editorHelper;
 	public PDBridge bridge;
@@ -92,7 +95,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 
 	/// <summary>
-	/// Plays a Pure Data module and sends it an audio source spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a Pure Data module with an audio source spatialized around the <paramref name="source"/> and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="soundName">The name of sound to be played. In Pure Data, use <c>[ureceive~ <paramref name="moduleName"/>_<paramref name="soundName"/>]</c> to receive the audio. Do not send this audio signal through a <c>[uspatialize~]</c> because it is already spatialized.</param>
@@ -104,7 +107,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 	
 	/// <summary>
-	/// Plays a Pure Data module and sends it an audio source spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a Pure Data module with an audio source spatialized around the <paramref name="source"/> and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="soundName">The name of sound to be played. In Pure Data, use <c>[ureceive~ <paramref name="moduleName"/>_<paramref name="soundName"/>]</c> to receive the audio. Do not send this audio signal through a <c>[uspatialize~]</c> because it is already spatialized.</param>
@@ -116,7 +119,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 	
 	/// <summary>
-	/// Plays a Pure Data module and sends it an audio source spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a Pure Data module with an audio source spatialized around the <paramref name="source"/> and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="soundName">The name of sound to be played. In Pure Data, use <c>[ureceive~ <paramref name="moduleName"/>_<paramref name="soundName"/>]</c> to receive the audio. Do not send this audio signal through a <c>[uspatialize~]</c> because it is already spatialized.</param>
@@ -128,14 +131,14 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 	
 	/// <summary>
-	/// Plays a Pure Data module and sends it an audio source spatialized around the listener. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a Pure Data module with an audio source spatialized around the listener and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="soundName">The name of sound to be played. In Pure Data, use <c>[ureceive~ <paramref name="moduleName"/>_<paramref name="soundName"/>]</c> to receive the audio. Do not send this audio signal through a <c>[uspatialize~]</c> because it is already spatialized.</param>
 	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="soundName"/> inspector.</param>
 	/// <returns>The AudioItem that will let you control the audio source.</returns>
 	public static AudioItem Play(string moduleName, string soundName, params AudioOption[] audioOptions) {
-		return instance.itemManager.Play(moduleName, soundName, Instance.gameObject, audioOptions);
+		return instance.itemManager.Play(moduleName, soundName, Instance.listener.gameObject, audioOptions);
 	}
 	
 	/// <summary>
@@ -150,18 +153,18 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 		
 	/// <summary>
-	/// Plays a Pure Data module spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a Pure Data module spatialized around the <paramref name="source"/>. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="source">The source around which the module will be spatialized. If a source is already provided in the inspector, it will be overriden. In Pure Data, send the audio that you want spatialized through a <c>[uspatialize~ <paramref name="moduleName"/>]</c>.</param>
 	/// <param name = "audioOptions">Options that will override the default options set in the inspector.</param>
 	/// <returns>The AudioItem that will let you control the module.</returns>
 	public static AudioItem Play(string moduleName, Transform source, params AudioOption[] audioOptions) {
-		return instance.itemManager.Play(moduleName, source, audioOptions);
+		return instance.itemManager.Play(moduleName, source.gameObject, audioOptions);
 	}
 		
 	/// <summary>
-	/// Plays a Pure Data module spatialized around the <paramref name="source"/>. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a Pure Data module spatialized around the <paramref name="source"/>. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="source">The source around which the module will be spatialized. If a source is already provided in the inspector, it will be overriden. In Pure Data, send the audio that you want spatialized through a <c>[uspatialize~ <paramref name="moduleName"/>]</c>.</param>
@@ -172,17 +175,17 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 	
 	/// <summary>
-	/// Plays a Pure Data module spatialized around the listener. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a Pure Data module spatialized around the listener. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name = "audioOptions">Options that will override the default options set in the inspector.</param>
 	/// <returns>The AudioItem that will let you control the module.</returns>
 	public static AudioItem Play(string moduleName, params AudioOption[] audioOptions) {
-		return instance.itemManager.Play(moduleName, Instance.gameObject, audioOptions);
+		return instance.itemManager.Play(moduleName, Instance.listener.gameObject, audioOptions);
 	}
 
 	/// <summary>
-	/// Plays a container spatialized around the <paramref name="source"/> and sends it to Pure Data. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a container spatialized around the <paramref name="source"/> and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="containerName">The name of the container to be played.</param>
@@ -194,7 +197,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 	
 	/// <summary>
-	/// Plays a container spatialized around the <paramref name="source"/> and sends it to Pure Data. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a container spatialized around the <paramref name="source"/> and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="containerName">The name of the container to be played.</param>
@@ -206,7 +209,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 		
 	/// <summary>
-	/// Plays a container spatialized around the <paramref name="source"/> and sends it to Pure Data. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a container spatialized around the <paramref name="source"/> and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="containerName">The name of the container to be played.</param>
@@ -218,14 +221,14 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	}
 	
 	/// <summary>
-	/// Plays a container spatialized around the listener and sends it to Pure Data. In Pure Data, you can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
+	/// Plays a container spatialized around the listener and sends it to a <c>[ureceive~ <paramref name="moduleName"/>]</c> in Pure Data. You can receive the play command (float 1) with a <c>[receive <paramref name="moduleName"/>_Play]</c>.
 	/// </summary>
 	/// <param name="moduleName">The name of the module to be played. If the module doesn't exist, one will be created with the default settings.</param>
 	/// <param name="containerName">The name of the container to be played.</param>
 	/// <param name = "audioOptions">Options that will override the default options set in the <paramref name="containerName"/> inspector.</param>
 	/// <returns>The AudioItem that will let you control the container.</returns>
 	public static AudioItem PlayContainer(string moduleName, string containerName, params AudioOption[] audioOptions) {
-		return Instance.itemManager.PlayContainer(moduleName, containerName, null, audioOptions);
+		return Instance.itemManager.PlayContainer(moduleName, containerName, Instance.listener.gameObject, audioOptions);
 	}
 	
 	/// <summary>
@@ -242,7 +245,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	/// </summary>
 	/// <returns>The master volume.</returns>
 	public static float GetMasterVolume() {
-		return instance.generalSettings.MasterVolume;
+		return Instance.generalSettings.MasterVolume;
 	}
 	
 	/// <summary>
@@ -251,7 +254,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	/// <param name="targetVolume">The target to which the volume will be ramped.</param>
 	/// <param name="time">The time it will take for the volume to reach the <paramref name="targetVolume"/>.</param>
 	public static void SetMasterVolume(float targetVolume, float time) {
-		instance.itemManager.SetMasterVolume(targetVolume, time);
+		Instance.generalSettings.SetMasterVolume(targetVolume, time);
 	}
 	
 	/// <summary>
@@ -259,7 +262,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	/// </summary>
 	/// <param name="targetVolume">The target to which the volume will be set.</param>
 	public static void SetMasterVolume(float targetVolume) {
-		instance.itemManager.SetMasterVolume(targetVolume);
+		Instance.generalSettings.SetMasterVolume(targetVolume);
 	}
 	
 	/// <summary>

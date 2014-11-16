@@ -5,9 +5,10 @@ using System.Collections;
 namespace Magicolo.AudioTools {
 	public class PDGainManager : Magicolo.AudioTools.GainManager {
 
-		public int index;
-		public int voice;
-		public int offset;
+		[HideInInspector] public string moduleName;
+		[HideInInspector] public int index;
+		[HideInInspector] public int voice;
+		[HideInInspector] public int offset;
 		[HideInInspector] public PDPlayer pdPlayer;
 		
 		public static int indexCounter;
@@ -15,7 +16,7 @@ namespace Magicolo.AudioTools {
 		public static Dictionary<int, PDSingleAudioItem> indexAudioItem = new Dictionary<int, PDSingleAudioItem>();
 		public static Dictionary<string, int> soundNameVoice = new Dictionary<string, int>();
 		
-		public virtual void Initialize(GameObject source, PDSingleAudioItem audioItem, PDPlayer pdPlayer) {
+		public virtual void Initialize(object source, PDSingleAudioItem audioItem, PDPlayer pdPlayer) {
 			base.Initialize(source, audioItem, pdPlayer);
 			
 			this.pdPlayer = pdPlayer;

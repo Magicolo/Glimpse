@@ -4,7 +4,7 @@ using System.Collections;
 using Magicolo.GeneralTools;
 
 namespace Magicolo.AudioTools {
-	public class Player : MonoBehaviour {
+	public abstract class Player : MonoBehaviour {
 		
 		public AudioPlayer audioPlayer;
 		

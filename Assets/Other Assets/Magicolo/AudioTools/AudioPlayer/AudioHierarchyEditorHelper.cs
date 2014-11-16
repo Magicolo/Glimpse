@@ -96,7 +96,7 @@ namespace Magicolo.AudioTools {
 		public override void OnProjectWindowChanged() {
 			base.OnProjectWindowChanged();
 			
-			if (!Application.isPlaying) {
+			if (audioPlayer != null && audioPlayer.hierarchyManager != null) {
 				audioPlayer.hierarchyManager.UpdateHierarchy();
 			}
 		}
@@ -104,7 +104,7 @@ namespace Magicolo.AudioTools {
 		public override void OnSelectionChanged() {
 			base.OnSelectionChanged();
 			
-			if (!Application.isPlaying && selection.Length == 1 && selection[0] == audioPlayer.gameObject){
+			if (selection.Length == 1 && selection[0] == audioPlayer.gameObject && audioPlayer != null && audioPlayer.hierarchyManager != null) {
 				audioPlayer.hierarchyManager.UpdateHierarchy();
 			}
 		}

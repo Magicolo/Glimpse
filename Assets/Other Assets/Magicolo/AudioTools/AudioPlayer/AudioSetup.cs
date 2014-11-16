@@ -21,6 +21,8 @@ namespace Magicolo.AudioTools {
 		public AudioInfo audioInfo;
 		public AudioPlayer audioPlayer;
 		
+		public string pName;
+		
 		public void Update() {
 			if (!Application.isPlaying) {
 				if (Source == null || Clip == null) {
@@ -28,7 +30,10 @@ namespace Magicolo.AudioTools {
 					return;
 				}
 				
-				this.SetUniqueName(name, "", audioPlayer.hierarchyManager.audioSetups);
+				if (pName != name) {
+					this.SetUniqueName(name, "", audioPlayer.hierarchyManager.audioSetups);
+					pName = name;
+				}
 			}
 		}
 

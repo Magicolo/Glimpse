@@ -2,9 +2,9 @@
 using System.Collections;
 using Magicolo.AudioTools;
 
-#if UNITY_EDITOR
-[UnityEditor.InitializeOnLoad]
-#endif
+// TODO Add the ability to subscribe/unsubscribe to metronome events.
+// FIXME Some AudioItems can be updated multiple times per frame (ex: Sampler plays a Pure Data sound)
+
 [ExecuteInEditMode]
 public class AudioPlayer : Magicolo.AudioTools.Player {
 
@@ -19,6 +19,9 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 			}
 			return instance;
 		}
+	}
+	
+	AudioPlayer(){
 	}
 	
 	#region Components
@@ -195,7 +198,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	/// <param name="targetVolume">The target to which the volume will be ramped.</param>
 	/// <param name="time">The time it will take for the volume to reach the <paramref name="targetVolume"/>.</param>
 	public static void SetMasterVolume(float targetVolume, float time) {
-		Instance.itemManager.SetMasterVolume(targetVolume, time);
+		Instance.generalSettings.SetMasterVolume(targetVolume, time);
 	}
 	
 	/// <summary>
@@ -203,7 +206,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	/// </summary>
 	/// <param name="targetVolume">The target to which the volume will be set.</param>
 	public static void SetMasterVolume(float targetVolume) {
-		Instance.itemManager.SetMasterVolume(targetVolume);
+		Instance.generalSettings.SetMasterVolume(targetVolume);
 	}
 
 	/// <summary>

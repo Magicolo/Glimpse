@@ -30,15 +30,19 @@ public static class GameObjectExtensions {
 	}
 	
 	public static GameObject FindChild(this GameObject parent, string childName) {
-		foreach (var child in parent.transform.GetChildren()) {
-			if (child.name == childName) return child.gameObject;
+		foreach (Transform child in parent.transform.GetChildren()) {
+			if (child.name == childName) {
+				return child.gameObject;
+			}
 		}
 		return null;
 	}
 
 	public static GameObject FindChildRecursive(this GameObject parent, string childName) {
-		foreach (var child in parent.transform.GetChildrenRecursive()) {
-			if (child.name == childName) return child.gameObject;
+		foreach (Transform child in parent.transform.GetChildrenRecursive()) {
+			if (child.name == childName) {
+				return child.gameObject;
+			}
 		}
 		return null;
 	}

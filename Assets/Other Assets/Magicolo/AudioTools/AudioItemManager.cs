@@ -79,17 +79,7 @@ namespace Magicolo.AudioTools {
 			activeMultipleAudioItems.Remove(audioItem);
 			inactiveMultipleAudioItems.Remove(audioItem);
 		}
-		
-		public virtual void SetMasterVolume(float targetVolume, float time) {
-			player.coroutineHolder.RemoveCoroutines("FadeMasterVolume");
-			player.coroutineHolder.AddCoroutine("FadeMasterVolume", FadeMasterVolume(player.generalSettings.MasterVolume, targetVolume, time));
-		}
-		
-		public virtual void SetMasterVolume(float targetVolume) {
-			player.coroutineHolder.RemoveCoroutines("FadeMasterVolume");
-			player.generalSettings.MasterVolume = targetVolume;
-		}
-		
+				
 		public virtual void LimitVoices() {
 			if (activeSingleAudioItems.Count > player.generalSettings.maxVoices) {
 				foreach (SingleAudioItem audioItem in activeSingleAudioItems.ToArray()) {
@@ -118,12 +108,155 @@ namespace Magicolo.AudioTools {
 			inactiveSingleAudioItems.Add(audioItem);
 			return audioItem;
 		}
-	
+
+		public virtual MultipleAudioItem GetMultipleAudioItem(AudioContainer container, object source) {
+			MultipleAudioItem multipleAudioItem;
+			
+			switch (container.type) {
+				case AudioContainer.Types.RandomContainer:
+					multipleAudioItem = GetRandomAudioItem(container, container.childrenIds, source);
+					break;
+				case AudioContainer.Types.SwitchContainer:
+					multipleAudioItem = GetSwitchAudioItem(container, container.childrenIds, source);
+					break;
+				default:
+					multipleAudioItem = GetMixAudioItem(container, container.childrenIds, source);
+					break;
+			}
+			return multipleAudioItem;
+		}
+		
+		public virtual AudioItem GetSubContainerAudioItem(AudioContainer container, AudioSubContainer subContainer, object source) {
+			AudioItem audioItem = null;
+			
+			if (subContainer.IsSource) {
+				audioItem = GetSourceAudioItem(container, subContainer, source);
+			}
+			else {
+				audioItem = GetContainerAudioItem(container, subContainer, source);
+			}
+			return audioItem;
+		}
+
+		public virtual SingleAudioItem GetSourceAudioItem(AudioContainer container, AudioSubContainer subContainer, object source) {
+			SingleAudioItem sourceAudioItem = null;
+			
+			switch (subContainer.type) {
+				case AudioSubContainer.Types.Sampler:
+					sourceAudioItem = player.generalSettings.Sampler.itemManager.GetSingleAudioItem(player.generalSettings.Sampler.itemManager.GetInstrument(subContainer.instrumentName), subContainer.note, subContainer.velocity, source);
+					if (sourceAudioItem != null) {
+						sourceAudioItem.startAudioOptions = subContainer.audioOptions;
+					}
+					break;
+				default:
+					sourceAudioItem = GetSingleAudioItem(subContainer.audioInfo.Name, source);
+					if (sourceAudioItem != null) {
+						sourceAudioItem.startAudioOptions = subContainer.audioOptions;
+					}
+					break;
+			}
+			return sourceAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetContainerAudioItem(AudioContainer container, AudioSubContainer subContainer, object source) {
+			MultipleAudioItem multipleAudioItem = null;
+			
+			switch (subContainer.type) {
+				case AudioSubContainer.Types.RandomContainer:
+					multipleAudioItem = GetRandomAudioItem(container, subContainer.childrenIds, source);
+					break;
+				case AudioSubContainer.Types.SwitchContainer:
+					multipleAudioItem = GetSwitchAudioItem(container, subContainer.childrenIds, source);
+					break;
+				default:
+					multipleAudioItem = GetMixAudioItem(container, subContainer.childrenIds, source);
+					break;
+			}
+			return multipleAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetMixAudioItem(AudioContainer container, List<int> childrenIds, object source) {
+			idCounter += 1;
+			MultipleAudioItem mixAudioItem = new MultipleAudioItem(container.Name, idCounter, this, player);
+			
+			foreach (int childrenId in childrenIds) {
+				AudioItem childAudioItem = GetSubContainerAudioItem(container, container.GetSubContainerWithID(childrenId), source);
+				if (childAudioItem != null) {
+					mixAudioItem.AddAudioItem(childAudioItem);
+				}
+			}
+			
+			mixAudioItem.Update();
+			inactiveMultipleAudioItems.Add(mixAudioItem);
+			return mixAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetRandomAudioItem(AudioContainer container, List<int> childrenIds, object source) {
+			idCounter += 1;
+			MultipleAudioItem randomAudioItem = new MultipleAudioItem(container.Name, idCounter, this, player);
+			List<AudioSubContainer> childcontainers = new List<AudioSubContainer>();
+			List<float> weights = new List<float>();
+			
+			for (int i = 0; i < childrenIds.Count; i++) {
+				AudioSubContainer childContainer = container.GetSubContainerWithID(childrenIds[i]);
+				if (childContainer != null) {
+					childcontainers.Add(childContainer);
+					weights.Add(childContainer.weight);
+				}
+			}
+			
+			AudioSubContainer randomChildContainer = HelperFunctions.WeightedRandom(childcontainers, weights);
+			if (randomAudioItem != null) {
+				AudioItem childAudioItem = GetSubContainerAudioItem(container, randomChildContainer, source);
+				if (childAudioItem != null) {
+					randomAudioItem.AddAudioItem(childAudioItem);
+				}
+			}
+			
+			randomAudioItem.Update();
+			inactiveMultipleAudioItems.Add(randomAudioItem);
+			return randomAudioItem;
+		}
+		
+		public virtual MultipleAudioItem GetSwitchAudioItem(AudioContainer container, List<int> childrenIds, object source) {
+			idCounter += 1;
+			MultipleAudioItem switchAudioItem = new MultipleAudioItem(container.Name, idCounter, this, player);
+			
+			string stateName = "";
+			AudioSubContainer[] childrenSubContainers = container.IdsToSubContainers(childrenIds);
+			
+			if (childrenSubContainers[0].parentId == 0 && container.stateHolder != null && !string.IsNullOrEmpty(container.statePath)) {
+				stateName = "" + container.stateHolder.GetValueFromMember(container.statePath);
+			}
+			else {
+				AudioSubContainer parentSubContainer = container.GetSubContainerWithID(childrenSubContainers[0].parentId);
+				
+				if (parentSubContainer.stateHolder != null && !string.IsNullOrEmpty(parentSubContainer.statePath)) {
+					stateName = "" + parentSubContainer.stateHolder.GetValueFromMember(parentSubContainer.statePath);
+				}
+			}
+			
+			if (!string.IsNullOrEmpty(stateName)) {
+				foreach (AudioSubContainer childSubContainer in childrenSubContainers) {
+					if (childSubContainer.stateName == stateName) {
+						AudioItem childAudioItem = GetSubContainerAudioItem(container, childSubContainer, source);
+						if (childAudioItem != null) {
+							switchAudioItem.AddAudioItem(childAudioItem);
+						}
+					}
+				}
+			}
+			
+			switchAudioItem.Update();
+			inactiveMultipleAudioItems.Add(switchAudioItem);
+			return switchAudioItem;
+		}
+
 		public virtual AudioSource GetAudioSource(AudioInfo audioInfo, object source) {
 			GameObject gameObject = GetGameObject(source);
 			return SetAudioSource(gameObject.GetOrAddComponent<AudioSource>(), audioInfo);
 		}
-					
+		
 		public virtual AudioSource GetAudioSource(AudioInfo audioInfo, Vector3 source) {
 			GameObject gameObject = GetGameObject(source);
 			return SetAudioSource(gameObject.GetOrAddComponent<AudioSource>(), audioInfo);
@@ -136,7 +269,7 @@ namespace Magicolo.AudioTools {
 			audioSource.pitch += Random.Range(-audioInfo.randomPitch, audioInfo.randomPitch);
 			return audioSource;
 		}
-	
+		
 		public virtual GameObject GetGameObject(object source) {
 			GameObject gameObject;
 			
@@ -155,18 +288,6 @@ namespace Magicolo.AudioTools {
 			Object.DontDestroyOnLoad(gameObject);
 			
 			return gameObject;
-		}
-
-		public virtual IEnumerator FadeMasterVolume(float startVolume, float targetVolume, float time) {
-			float counter = 0;
-			
-			while (counter < time) {
-				player.generalSettings.MasterVolume = (counter / time) * (targetVolume - startVolume) + startVolume;
-				counter += Time.deltaTime;
-				yield return new WaitForSeconds(0);
-			}
-			
-			player.generalSettings.MasterVolume = targetVolume;
 		}
 	}
 }

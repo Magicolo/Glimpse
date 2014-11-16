@@ -18,12 +18,6 @@ namespace Magicolo.AudioTools {
 			this.pdItemManager = pdItemManager;
 		}
 
-		public override void Update() {
-			base.Update();
-			
-			gameObject.name = string.Format("{0}_{1}", Name, gameObject.name);
-		}
-		
 		protected override void UpdateVolume() {
 			base.UpdateVolume();
 			

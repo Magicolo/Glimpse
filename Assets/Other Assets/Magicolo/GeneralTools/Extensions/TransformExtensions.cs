@@ -7,12 +7,9 @@ public static class TransformExtensions {
 
 	public static void SetPosition(this Transform transform, Vector3 position, string axis = "XYZ") {
 		Vector3 newPosition = transform.position;
-		if (axis.Contains("X"))
-			newPosition.x = position.x;
-		if (axis.Contains("Y"))
-			newPosition.y = position.y;
-		if (axis.Contains("Z"))
-			newPosition.z = position.z;
+		if (axis.Contains("X")) newPosition.x = position.x;
+		if (axis.Contains("Y")) newPosition.y = position.y;
+		if (axis.Contains("Z")) newPosition.z = position.z;
 		transform.position = newPosition;
 	}
 	
@@ -22,12 +19,9 @@ public static class TransformExtensions {
 	
 	public static void SetLocalPosition(this Transform transform, Vector3 position, string axis = "XYZ") {
 		Vector3 newPosition = transform.localPosition;
-		if (axis.Contains("X"))
-			newPosition.x = position.x;
-		if (axis.Contains("Y"))
-			newPosition.y = position.y;
-		if (axis.Contains("Z"))
-			newPosition.z = position.z;
+		if (axis.Contains("X")) newPosition.x = position.x;
+		if (axis.Contains("Y")) newPosition.y = position.y;
+		if (axis.Contains("Z")) newPosition.z = position.z;
 		transform.localPosition = newPosition;
 	}
 	
@@ -45,12 +39,9 @@ public static class TransformExtensions {
 	
 	public static void SetEulerAngles(this Transform transform, Vector3 angles, string axis = "XYZ") {
 		Vector3 newAngles = transform.eulerAngles;
-		if (axis.Contains("X"))
-			newAngles.x = angles.x;
-		if (axis.Contains("Y"))
-			newAngles.y = angles.y;
-		if (axis.Contains("Z"))
-			newAngles.z = angles.z;
+		if (axis.Contains("X")) newAngles.x = angles.x;
+		if (axis.Contains("Y")) newAngles.y = angles.y;
+		if (axis.Contains("Z")) newAngles.z = angles.z;
 		transform.eulerAngles = newAngles;
 	}
 	
@@ -60,12 +51,9 @@ public static class TransformExtensions {
 	
 	public static void SetLocalEulerAngles(this Transform transform, Vector3 angles, string axis = "XYZ") {
 		Vector3 newAngles = transform.localEulerAngles;
-		if (axis.Contains("X"))
-			newAngles.x = angles.x;
-		if (axis.Contains("Y"))
-			newAngles.y = angles.y;
-		if (axis.Contains("Z"))
-			newAngles.z = angles.z;
+		if (axis.Contains("X")) newAngles.x = angles.x;
+		if (axis.Contains("Y")) newAngles.y = angles.y;
+		if (axis.Contains("Z")) newAngles.z = angles.z;
 		transform.localEulerAngles = newAngles;
 	}
 	
@@ -83,12 +71,9 @@ public static class TransformExtensions {
 	
 	public static void SetLocalScale(this Transform transform, Vector3 scale, string axis = "XYZ") {
 		Vector3 newScale = transform.localScale;
-		if (axis.Contains("X"))
-			newScale.x = scale.x;
-		if (axis.Contains("Y"))
-			newScale.y = scale.y;
-		if (axis.Contains("Z"))
-			newScale.z = scale.z;
+		if (axis.Contains("X")) newScale.x = scale.x;
+		if (axis.Contains("Y")) newScale.y = scale.y;
+		if (axis.Contains("Z")) newScale.z = scale.z;
 		transform.localScale = newScale;
 	}
 	
@@ -107,12 +92,9 @@ public static class TransformExtensions {
 	public static void FlipScale(this Transform transform, string axis = "Y") {
 		Vector3 flippedScale = transform.localScale;
 		
-		if (axis.Contains("X"))
-			flippedScale.x = -flippedScale.x;
-		if (axis.Contains("Y"))
-			flippedScale.y = -flippedScale.y;
-		if (axis.Contains("Z"))
-			flippedScale.z = -flippedScale.z;
+		if (axis.Contains("X")) flippedScale.x = -flippedScale.x;
+		if (axis.Contains("Y")) flippedScale.y = -flippedScale.y;
+		if (axis.Contains("Z")) flippedScale.z = -flippedScale.z;
 		
 		transform.localScale = flippedScale;
 	}
@@ -152,7 +134,7 @@ public static class TransformExtensions {
 	}
 	
 	public static Transform[] GetChildren(this Transform parent) {
-		var children = new List<Transform>();
+		List<Transform> children = new List<Transform>();
 		if (parent != null) {
 			if (parent.childCount > 0) {
 				for (int i = 0; i < parent.childCount; i++) {
@@ -165,7 +147,7 @@ public static class TransformExtensions {
 	}
 	
 	public static Transform[] GetChildrenRecursive(this Transform parent) {
-		var children = new List<Transform>();
+		List<Transform> children = new List<Transform>();
 		if (parent != null) {
 			foreach (Transform child in parent.GetChildren()) {
 				children.Add(child);
@@ -178,9 +160,10 @@ public static class TransformExtensions {
 	}
 	
 	public static Transform FindChildRecursive(this Transform parent, string childName) {
-		foreach (var child in parent.GetChildrenRecursive()) {
-			if (child.name == childName)
+		foreach (Transform child in parent.GetChildrenRecursive()) {
+			if (child.name == childName) {
 				return child;
+			}
 		}
 		return null;
 	}
@@ -190,9 +173,10 @@ public static class TransformExtensions {
 	}
 	
 	public static Transform AddChild(this Transform parent, string childName) {
-		var child = new GameObject();
-		if (!string.IsNullOrEmpty(childName))
+		GameObject child = new GameObject();
+		if (!string.IsNullOrEmpty(childName)) {
 			child.name = childName;
+		}
 		child.transform.Reset();
 		child.transform.parent = parent;
 		return child.transform;
@@ -205,16 +189,16 @@ public static class TransformExtensions {
 	
 	public static void SortChildren(this Transform parent) {
 		Transform[] children = parent.GetChildren();
-		var childrendNames = new List<string>();
+		List<string> childrendNames = new List<string>();
 		
 		foreach (Transform child in children) {
 			childrendNames.Add(child.name);
-			child.parent = null;
 		}
 		
 		Array.Sort(childrendNames.ToArray(), children);
 		
 		foreach (Transform child in children) {
+			child.parent = null;
 			child.parent = parent;
 		}
 	}
@@ -222,12 +206,11 @@ public static class TransformExtensions {
 	public static void SortChildrenRecursive(this Transform parent) {
 		parent.SortChildren();
 		foreach (Transform child in parent.GetChildren()) {
-			if (child.childCount > 0)
-				child.SortChildrenRecursive();
+			if (child.childCount > 0) child.SortChildrenRecursive();
 		}
 	}
 	
-	public static void SetChildrenActive(this Transform parent, bool value){
+	public static void SetChildrenActive(this Transform parent, bool value) {
 		foreach (Transform child in parent.GetChildren()) {
 			child.gameObject.SetActive(value);
 		}

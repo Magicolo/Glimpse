@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using System.Collections;
 using Magicolo.GeneralTools;
@@ -8,6 +7,7 @@ namespace Magicolo.AudioTools {
 	[System.Serializable]
 	public class PDItemManager : AudioItemManager {
 		
+		public string currentModuleName;
 		public PDPlayer pdPlayer;
 		
 		Dictionary<string, PDModule> moduleDict;
@@ -26,10 +26,16 @@ namespace Magicolo.AudioTools {
 		
 		public PDSingleAudioItem Play(string moduleName, string soundName, object source, params AudioOption[] audioOptions) {
 			PDModule module = GetModule(moduleName, source);
-			PDSingleAudioItem audioItem = GetSingleAudioItem(moduleName, soundName, module.spatializer.Source);
+			PDSingleAudioItem audioItem = GetSingleAudioItem(soundName, module.spatializer.Source) as PDSingleAudioItem;
+			
+			if (module.State != AudioStates.Playing) {
+				module.Play();
+			}
+			
+			audioItem.Play(audioOptions);
 			module.AddAudioItem(audioItem);
 			LimitVoices();
-			module.Play(audioOptions);
+			
 			return audioItem;
 		}
 
@@ -39,11 +45,18 @@ namespace Magicolo.AudioTools {
 			return module;
 		}
 		
-		public PDModule PlayContainer(string moduleName, string containerName, object source, params AudioOption[] audioOptions) {
+		public MultipleAudioItem PlayContainer(string moduleName, string containerName, object source, params AudioOption[] audioOptions) {
 			PDModule module = GetModule(moduleName, source);
-			module.AddAudioItem(GetAudioItem(moduleName, pdPlayer.containerManager.GetContainer(containerName), module.spatializer.Source));
-			module.Play(audioOptions);
-			return module;
+			MultipleAudioItem audioItem = GetMultipleAudioItem(player.containerManager.GetContainer(containerName), module.spatializer.Source);
+			
+			if (module.State != AudioStates.Playing) {
+				module.Play();
+			}
+			
+			audioItem.Play(audioOptions);
+			module.AddAudioItem(audioItem);
+			
+			return audioItem;
 		}
 		
 		public void Pause(string moduleName) {
@@ -76,20 +89,22 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
-		public PDModule GetModule(string moduleName) {
+		public virtual PDModule GetModule(string moduleName) {
 			return moduleDict[moduleName];
 		}
 
-		public PDModule GetModule(string moduleName, object source) {
+		public virtual PDModule GetModule(string moduleName, object source) {
+			currentModuleName = moduleName;
 			PDModule module;
+			
 			if (moduleDict.ContainsKey(moduleName)) {
 				module = moduleDict[moduleName];
-				module.spatializer.Source = source ?? module.spatializer.Source;
+				module.spatializer.Source = source == player.listener.gameObject && module.spatializer.Source != null ? module.spatializer.Source : source;
 			}
 			else {
 				idCounter += 1;
 				module = new PDModule(moduleName, idCounter, pdPlayer.editorHelper.defaultModule, this, pdPlayer);
-				module.spatializer.Source = source ?? module.spatializer.Source;
+				module.spatializer.Source = source == player.listener.gameObject && module.spatializer.Source != null ? module.spatializer.Source : source;
 				moduleDict[moduleName] = module;
 				pdPlayer.editorHelper.modules.Add(new PDEditorModule(module, pdPlayer));
 				
@@ -99,157 +114,19 @@ namespace Magicolo.AudioTools {
 			return module;
 		}
 
-		public PDSingleAudioItem GetSingleAudioItem(string moduleName, string soundName, object source) {
+		public override SingleAudioItem GetSingleAudioItem(string soundName, object source) {
 			AudioInfo audioInfo = infoManager.GetAudioInfo(soundName);
 			AudioSource audioSource = GetAudioSource(audioInfo, source);
 			CoroutineHolder coroutineHolder = audioSource.GetOrAddComponent<CoroutineHolder>();
 			PDGainManager gainManager = audioSource.GetOrAddComponent<PDGainManager>();
 			
 			idCounter += 1;
-			PDSingleAudioItem audioItem = new PDSingleAudioItem(moduleName, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, pdPlayer);
+			PDSingleAudioItem audioItem = new PDSingleAudioItem(currentModuleName, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, pdPlayer);
 			
 			gainManager.Initialize(source, audioItem, pdPlayer);
 			audioItem.Update();
 			inactiveSingleAudioItems.Add(audioItem);
 			return audioItem;
-		}
-		
-		public virtual AudioItem GetAudioItem(string moduleName, AudioContainer container, object source) {
-			MultipleAudioItem multipleAudioItem;
-			
-			idCounter += 1;
-			switch (container.type) {
-				case AudioContainer.Types.RandomContainer:
-					multipleAudioItem = GetRandomAudioItem(moduleName, container, container.childrenIds, source);
-					break;
-				case AudioContainer.Types.SwitchContainer:
-					multipleAudioItem = GetSwitchAudioItem(moduleName, container, container.childrenIds, source);
-					break;
-				default:
-					multipleAudioItem = GetMixAudioItem(moduleName, container, container.childrenIds, source);
-					break;
-			}
-			return multipleAudioItem;
-		}
-		
-		public virtual AudioItem GetAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, object source) {
-			AudioItem audioItem = null;
-			
-			if (subContainer.IsSource) {
-				audioItem = GetSourceAudioItem(moduleName, container, subContainer, source);
-			}
-			else {
-				audioItem = GetContainerAudioItem(moduleName, container, subContainer, source);
-			}
-			return audioItem;
-		}
-		
-		public virtual PDSingleAudioItem GetSourceAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, object source) {
-			PDSingleAudioItem sourceAudioItem = null;
-			
-			switch (subContainer.type) {
-				default:
-					if (subContainer.audioInfo != null) {
-						sourceAudioItem = GetSingleAudioItem(moduleName, subContainer.audioInfo.Name, source);
-						sourceAudioItem.startAudioOptions = subContainer.audioOptions;
-					}
-					break;
-			}
-			return sourceAudioItem;
-		}
-		
-		public virtual MultipleAudioItem GetContainerAudioItem(string moduleName, AudioContainer container, AudioSubContainer subContainer, object source) {
-			MultipleAudioItem multipleAudioItem = null;
-				
-			switch (subContainer.type) {
-				case AudioSubContainer.Types.RandomContainer:
-					multipleAudioItem = GetRandomAudioItem(moduleName, container, subContainer.childrenIds, source);
-					break;
-				case AudioSubContainer.Types.SwitchContainer:
-					multipleAudioItem = GetSwitchAudioItem(moduleName, container, subContainer.childrenIds, source);
-					break;
-				default:
-					multipleAudioItem = GetMixAudioItem(moduleName, container, subContainer.childrenIds, source);
-					break;
-			}
-			return multipleAudioItem;
-		}
-		
-		public virtual MultipleAudioItem GetMixAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, object source) {
-			idCounter += 1;
-			MultipleAudioItem mixAudioItem = new MultipleAudioItem(container.Name, idCounter, this, pdPlayer);
-			
-			foreach (int childrenId in childrenIds) {
-				AudioItem childAudioItem = GetAudioItem(moduleName, container, container.GetSubContainerWithID(childrenId), source);
-				if (childAudioItem != null) {
-					mixAudioItem.AddAudioItem(childAudioItem);
-				}
-			}
-			
-			mixAudioItem.Update();
-			inactiveMultipleAudioItems.Add(mixAudioItem);
-			return mixAudioItem;
-		}
-		
-		public virtual MultipleAudioItem GetRandomAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, object source) {
-			idCounter += 1;
-			MultipleAudioItem randomAudioItem = new MultipleAudioItem(container.Name, idCounter, this, pdPlayer);
-			List<AudioSubContainer> childcontainers = new List<AudioSubContainer>();
-			List<float> weights = new List<float>();
-			
-			for (int i = 0; i < childrenIds.Count; i++) {
-				AudioSubContainer childContainer = container.GetSubContainerWithID(childrenIds[i]);
-				if (childContainer != null) {
-					childcontainers.Add(childContainer);
-					weights.Add(childContainer.weight);
-				}
-			}
-			
-			AudioSubContainer randomChildContainer = HelperFunctions.WeightedRandom(childcontainers, weights);
-			if (randomAudioItem != null) {
-				AudioItem childAudioItem = GetAudioItem(moduleName, container, randomChildContainer, source);
-				if (childAudioItem != null) {
-					randomAudioItem.AddAudioItem(childAudioItem);
-				}
-			}
-			
-			randomAudioItem.Update();
-			inactiveMultipleAudioItems.Add(randomAudioItem);
-			return randomAudioItem;
-		}
-		
-		public virtual MultipleAudioItem GetSwitchAudioItem(string moduleName, AudioContainer container, List<int> childrenIds, object source) {
-			idCounter += 1;
-			MultipleAudioItem switchAudioItem = new MultipleAudioItem(container.Name, idCounter, this, pdPlayer);
-			
-			string stateName = "";
-			AudioSubContainer[] childrenSubContainers = container.IdsToSubContainers(childrenIds);
-			
-			if (childrenSubContainers[0].parentId == 0 && container.stateHolder != null && !string.IsNullOrEmpty(container.statePath)) {
-				stateName = "" + container.stateHolder.GetValueFromMember(container.statePath);
-			}
-			else {
-				AudioSubContainer parentSubContainer = container.GetSubContainerWithID(childrenSubContainers[0].parentId);
-				
-				if (parentSubContainer.stateHolder != null && !string.IsNullOrEmpty(parentSubContainer.statePath)) {
-					stateName = "" + parentSubContainer.stateHolder.GetValueFromMember(parentSubContainer.statePath);
-				}
-			}
-			
-			if (!string.IsNullOrEmpty(stateName)) {
-				foreach (AudioSubContainer childSubContainer in childrenSubContainers) {
-					if (childSubContainer.stateName == stateName) {
-						AudioItem childAudioItem = GetAudioItem(moduleName, container, childSubContainer, source);
-						if (childAudioItem != null) {
-							switchAudioItem.AddAudioItem(childAudioItem);
-						}
-					}
-				}
-			}
-			
-			switchAudioItem.Update();
-			inactiveMultipleAudioItems.Add(switchAudioItem);
-			return switchAudioItem;
 		}
 	}
 }

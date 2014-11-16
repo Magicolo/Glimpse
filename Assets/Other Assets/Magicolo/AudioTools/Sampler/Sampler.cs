@@ -2,7 +2,7 @@
 using System.Collections;
 using Magicolo.AudioTools;
 
-// TODO Add the logic to send Sampler notes to Pure Data.
+// TODO Add the missing documentation.
 
 [RequireComponent(typeof(AudioPlayer))]
 [ExecuteInEditMode]
@@ -14,11 +14,14 @@ public class Sampler : Magicolo.AudioTools.Player {
 			if (instance == null) {
 				instance = FindObjectOfType<Sampler>();
 			}
-			if (instance == null && Application.isPlaying){
+			if (instance == null && Application.isPlaying) {
 				Debug.LogError("No Sampler was found in the scene.");
 			}
 			return instance;
 		}
+	}
+	
+	Sampler() {
 	}
 	
 	#region Components
@@ -107,12 +110,28 @@ public class Sampler : Magicolo.AudioTools.Player {
 		return Instance.itemManager.Play(instrumentName, note, velocity, Instance.listener.gameObject, audioOptions);
 	}
 
+	public static AudioItem Play(string moduleName, string instrumentName, int note, float velocity, GameObject source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(moduleName, instrumentName, note, velocity, source, audioOptions);
+	}
+	
+	public static AudioItem Play(string moduleName, string instrumentName, int note, float velocity, Transform source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(moduleName, instrumentName, note, velocity, source.gameObject, audioOptions);
+	}
+	
+	public static AudioItem Play(string moduleName, string instrumentName, int note, float velocity, Vector3 source, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(moduleName, instrumentName, note, velocity, source, audioOptions);
+	}
+
+	public static AudioItem Play(string moduleName, string instrumentName, int note, float velocity, params AudioOption[] audioOptions) {
+		return Instance.itemManager.Play(moduleName, instrumentName, note, velocity, Instance.listener.gameObject, audioOptions);
+	}
+
 	/// <summary>
 	/// Gets the instrument of name <paramref name="instrumentName"/>.
 	/// </summary>
 	/// <param name="instrumentName">The name of the instrument to get.</param>
 	/// <returns>The instrument.</returns>
-	public static AudioItem GetInstrument(string instrumentName){
+	public static AudioItem GetInstrument(string instrumentName) {
 		return Instance.itemManager.GetInstrument(instrumentName);
 	}
 }

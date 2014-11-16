@@ -30,6 +30,25 @@ namespace Magicolo.AudioTools {
 			return audioItem;
 		}
 
+		public AudioItem Play(string moduleName, string instrumentName, int note, float velocity, object source, params AudioOption[] audioOptions) {
+			PDModule module = player.generalSettings.PdPlayer.itemManager.GetModule(moduleName, source);
+			SamplerInstrument instrument = GetInstrument(instrumentName);
+			SingleAudioItem audioItem = GetPDSingleAudioItem(instrument, note, velocity, source);
+			
+			if (audioItem == null) {
+				return instrument;
+			}
+			
+			if (module.State != AudioStates.Playing) {
+				module.Play();
+			}
+			
+			audioItem.Play(audioOptions);
+			module.AddAudioItem(audioItem);
+			
+			return audioItem;
+		}
+
 		public virtual SamplerInstrument GetInstrument(string instrumentName) {
 			SamplerInstrument instrument = null;
 			try {
@@ -50,6 +69,20 @@ namespace Magicolo.AudioTools {
 				return audioItem;
 			}
 			
+			instrument.Stop(note);
+			return null;
+		}
+
+		public virtual SingleAudioItem GetPDSingleAudioItem(SamplerInstrument instrument, int note, float velocity, object source) {
+			if (velocity > 0) {
+				SamplerInstrumentLayer layer = instrument.GetLayer(note, velocity);
+				SingleAudioItem audioItem = player.generalSettings.PdPlayer.itemManager.GetSingleAudioItem(layer.Name, source);
+				audioItem.audioSource.clip = layer.GetClip();
+				instrument.AddAudioItem(audioItem, note, velocity);
+				return audioItem;
+			}
+			
+			instrument.Stop(note);
 			return null;
 		}
 

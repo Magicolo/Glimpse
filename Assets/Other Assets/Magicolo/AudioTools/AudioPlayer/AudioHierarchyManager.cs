@@ -9,11 +9,12 @@ namespace Magicolo.AudioTools {
 	public class AudioHierarchyManager {
 
 		public string audioClipsPath;
-		public bool firstUpdate = true;
 		
 		public AudioSetup[] audioSetups;
 		public AudioClip[] currentAudioClips;
 		public AudioClip[] audioClips;
+		public GameObject[] children;
+		public GameObject[] currentChildren;
 		public List<GameObject> folderStructure = new List<GameObject>();
 		
 		public AudioPlayer audioPlayer;
@@ -25,11 +26,7 @@ namespace Magicolo.AudioTools {
 				audioPlayer.SetChildrenActive(false);
 				FreezeTransforms();
 			}
-			
-			if (firstUpdate) {
-				UpdateHierarchy();
-				firstUpdate = false;
-			}
+			UpdateHierarchy();
 		}
 		
 		public void UpdateHierarchy() {
@@ -45,7 +42,7 @@ namespace Magicolo.AudioTools {
 			SetCurrentAudioClips();
 			CreateHierarchy();
 			RemoveEmptyFolders();
-			audioPlayer.SortChildrenRecursive();
+			SortChildren();
 			FreezeTransforms();
 			CleanUp();
 		}
@@ -58,13 +55,27 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
+		public void SetCurrentAudioClips() {
+			audioClips = Resources.LoadAll<AudioClip>(audioClipsPath);
+			currentAudioClips = new AudioClip[audioSetups.Length];
+			currentChildren = audioPlayer.gameObject.GetChildrenRecursive();
+			
+			for (int i = 0; i < audioSetups.Length; i++) {
+				if (audioSetups[i] != null) {
+					currentAudioClips[i] = audioSetups[i].Clip;
+					currentChildren[i] = audioSetups[i].gameObject;
+				}
+			}
+		}
+		
 		public void CreateHierarchy() {
 			#if UNITY_EDITOR
 			foreach (AudioClip audioClip in audioClips) {
 				string audioClipPath = UnityEditor.AssetDatabase.GetAssetPath(audioClip).TrimStart(("Assets/Resources/" + audioClipsPath).ToCharArray());
 				string audioClipDirectory = Path.GetDirectoryName(audioClipPath);
 				GameObject parent = GetOrAddFolder(audioClipDirectory);
-				GameObject child = audioPlayer.gameObject.FindChildRecursive(audioClip.name);
+				GameObject child = GameObject.Find(audioClip.name);
+				
 				if (child == null) {
 					child = new GameObject(audioClip.name);
 					AudioSetup audioSetup = child.GetOrAddComponent<AudioSetup>();
@@ -125,15 +136,11 @@ namespace Magicolo.AudioTools {
 			}
 		}
 
-		public void SetCurrentAudioClips() {
-			audioClips = Resources.LoadAll<AudioClip>(audioClipsPath);
-			currentAudioClips = new AudioClip[audioSetups.Length];
-			
-			for (int i = 0; i < audioSetups.Length; i++) {
-				if (audioSetups[i] != null) {
-					currentAudioClips[i] = audioSetups[i].Clip;
-				}
+		public void SortChildren() {
+			if (!currentChildren.ContentEquals(children)) {
+				audioPlayer.SortChildrenRecursive();
 			}
+			children = currentChildren;
 		}
 		
 		public void FreezeTransforms() {
@@ -156,7 +163,7 @@ namespace Magicolo.AudioTools {
 			}
 		}
 
-		void CleanUp() {
+		public void CleanUp() {
 			audioSetups = new AudioSetup[0];
 			currentAudioClips = new AudioClip[0];
 			audioClips = new AudioClip[0];
