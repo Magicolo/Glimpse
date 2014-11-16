@@ -17,18 +17,13 @@ namespace Magicolo.AudioTools {
 			this.pdPlayer = pdPlayer;
 			BuildModulesDict();
 		}
-		
-		public void Initialize() {
-			foreach (PDModule module in moduleDict.Values) {
-				module.Initialize();
-			}
-		}
-		
+
 		public PDSingleAudioItem Play(string moduleName, string soundName, object source, params AudioOption[] audioOptions) {
 			PDModule module = GetModule(moduleName, source);
 			PDSingleAudioItem audioItem = GetSingleAudioItem(soundName, module.spatializer.Source) as PDSingleAudioItem;
 			
 			if (module.State != AudioStates.Playing) {
+				module.Initialize();
 				module.Play();
 			}
 			
@@ -41,7 +36,12 @@ namespace Magicolo.AudioTools {
 
 		public PDModule Play(string moduleName, object source, params AudioOption[] audioOptions) {
 			PDModule module = GetModule(moduleName, source);
-			module.Play(audioOptions);
+			
+			if (module.State != AudioStates.Playing) {
+				module.Initialize();
+				module.Play(audioOptions);
+			}
+			
 			return module;
 		}
 		
@@ -50,6 +50,7 @@ namespace Magicolo.AudioTools {
 			MultipleAudioItem audioItem = GetMultipleAudioItem(player.containerManager.GetContainer(containerName), module.spatializer.Source);
 			
 			if (module.State != AudioStates.Playing) {
+				module.Initialize();
 				module.Play();
 			}
 			

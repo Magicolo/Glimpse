@@ -86,7 +86,6 @@ public static class ArrayExtensions {
 		
 		for (int i = 0; i < array.Count; i++) {
 			if (!Equals(array[i], otherArray[i])) {
-				Logger.Log(array[i], otherArray[i]);
 				return false;
 			}
 		}

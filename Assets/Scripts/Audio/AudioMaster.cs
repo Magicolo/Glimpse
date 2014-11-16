@@ -48,7 +48,7 @@ public class AudioMaster : MonoBehaviour {
 		}
 	}
 	
-	public void Awake() {
+	public void Start() {
 		libpdControls.Start();
 
 		wind.Update();
@@ -66,7 +66,7 @@ public class AudioMaster : MonoBehaviour {
 	public static AudioItem PlayPlayerFootstep(FootstepActions footstepAction) {
 		Instance.footstepAction = footstepAction;
 		
-		return AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.transform.position);;
+		return AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
 	}
 	
 	public static AudioItem PlayDollUnseenSound(GameObject doll) {

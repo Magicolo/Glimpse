@@ -51,7 +51,7 @@ namespace Magicolo.AudioTools {
 		public AudioClip GetClip() {
 			if (clip == null && referenceClip != null) {
 				int frequency = (int)Mathf.Max(referenceClip.frequency * Mathf.Pow(2, (float)pitchDifference / 12), 1);
-				clip = AudioClip.Create(string.Format("{0} {1}{2}", referenceClip.name, pitchDifference >= 0 ? "+" : "", pitchDifference), referenceClip.samples, referenceClip.channels, frequency, settings.is3D, false);
+				clip = AudioClip.Create(referenceClip.name + " " + (pitchDifference >= 0 ? "+" : "") + pitchDifference, referenceClip.samples, referenceClip.channels, frequency, settings.is3D, false);
 				float[] data = new float[referenceClip.samples * referenceClip.channels];
 				referenceClip.GetData(data, 0);
 				clip.SetData(data, 0);

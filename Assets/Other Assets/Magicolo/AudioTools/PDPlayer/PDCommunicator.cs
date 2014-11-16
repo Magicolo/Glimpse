@@ -157,23 +157,33 @@ namespace Magicolo.AudioTools {
 		}
 	
 		void ReceiveDebugBang(string sendName) {
-			if (sendName == "Debug") Debug.Log(string.Format("{0} received Bang", sendName));
+			if (sendName == "Debug") {
+				Debug.Log(string.Format("{0} received Bang", sendName));
+			}
 		}
 	
 		void ReceiveDebugFloat(string sendName, float value) {
-			if (sendName == "Debug") Debug.Log(string.Format("{0} received Float: {1}", sendName, value));
+			if (sendName == "Debug") {
+				Debug.Log(string.Format("{0} received Float: {1}", sendName, value));
+			}
 		}
 	
 		void ReceiveDebugSymbol(string sendName, string value) {
-			if (sendName == "Debug") Debug.Log(string.Format("{0} received Symbol: {1}", sendName, value));
+			if (sendName == "Debug") {
+				Debug.Log(string.Format("{0} received Symbol: {1}", sendName, value));
+			}
 		}
 	
 		void ReceiveDebugList(string sendName, object[] value) {
-			if (sendName == "Debug") Debug.Log(string.Format("{0} received List: {1}", sendName, Logger.ObjectToString(value)));
+			if (sendName == "Debug") {
+				Debug.Log(string.Format("{0} received List: {1}", sendName, Logger.ObjectToString(value)));
+			}
 		}
 	
 		void ReceiveDebugMessage(string sendName, string message, object[] value) {
-			if (sendName == "Debug") Debug.Log(string.Format("{0} received Message: {1} {2}", sendName, message, Logger.ObjectToString(value)));
+			if (sendName == "Debug") {
+				Debug.Log(string.Format("{0} received Message: {1} {2}", sendName, message, Logger.ObjectToString(value)));
+			}
 		}
 	
 	

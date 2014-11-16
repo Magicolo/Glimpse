@@ -45,8 +45,8 @@ namespace Magicolo.AudioTools {
 		public override void Activate() {
 			base.Activate();
 			
-			pdPlayer.communicator.SendValue(string.Format("UVoice{0}Switch", index), 1);
-			pdPlayer.communicator.SendValue(string.Format("UVoice{0}", index), voice);
+			pdPlayer.communicator.SendValue("UVoice" + index + "Switch", 1);
+			pdPlayer.communicator.SendValue("UVoice" + index, voice);
 			pdPlayer.communicator.SendValue(audioItem.Name + "_Voice", voice);
 		}
 		
@@ -54,8 +54,8 @@ namespace Magicolo.AudioTools {
 			base.Deactivate();
 			
 			indexAudioItem.Remove(index);
-			pdPlayer.communicator.SendValue(string.Format("UVoice{0}Switch", index), 0);
-			pdPlayer.communicator.SendValue(string.Format("UVoice{0}", index), -1);
+			pdPlayer.communicator.SendValue("UVoice" + index + "Switch", 0);
+			pdPlayer.communicator.SendValue("UVoice" + index, -1);
 		}
 
 		public int GetUnusedIndex() {

@@ -37,7 +37,7 @@ namespace Magicolo.AudioTools {
 				}
 			}
 			
-			gameObject.name = string.Format("{0} ({1})", audioInfo.Name, State);
+			gameObject.name = audioInfo.Name + " (" + State + ")";
 		}
 		
 		protected override void UpdateVolume() {

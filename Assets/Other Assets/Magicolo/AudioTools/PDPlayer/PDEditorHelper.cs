@@ -46,6 +46,16 @@ namespace Magicolo.AudioTools {
 			#endif
 		}
 		
+		public override void OnPlaymodeStateChanged() {
+			base.OnPlaymodeStateChanged();
+			
+			#if UNITY_EDITOR
+			if (pdPlayer != null && pdPlayer.filterRead != null){
+				pdPlayer.filterRead.editorPaused = UnityEditor.EditorApplication.isPaused;
+			}
+			#endif
+		}
+		
 		public override void OnHierarchyWindowItemGUI(int instanceId, Rect selectionrect) {
 			base.OnHierarchyWindowItemGUI(instanceId, selectionrect);
 			
