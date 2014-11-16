@@ -131,12 +131,12 @@ public class GlimpseCamera : MonoBehaviour {
 	void checkGlimpse (GlimpseController glimpse) {
 		// Check if glimpse is within distance and angle range to be activated, and start interpolation if that's the case
 		
-		float glimpseDistance = Vector3.Distance(glimpse.projectorLocation.position, playerCameraLocation.position);
+		float glimpseDist = Vector3.Distance(glimpse.projectorLocation.position, playerCameraLocation.position);
 		float glimpseAngle = Quaternion.Angle (glimpse.projectorLocation.rotation, playerCameraLocation.rotation);
 		
 		
 		
-		if (glimpseDistance < glimpse.glimpseRange && glimpseAngle < glimpse.glimpseAngle && !glimpse.interpolationOn && !glimpse.transformComplete) {
+		if (glimpseDist < glimpse.glimpseRange && glimpseAngle < glimpse.glimpseAngle && !glimpse.interpolationOn && !glimpse.transformComplete) {
 			glimpse.interpolationOn = true;
 		}
 	}

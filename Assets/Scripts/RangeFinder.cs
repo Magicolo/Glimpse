@@ -20,7 +20,7 @@ public class RangeFinder : MonoBehaviour {
 		float posDistanceInterpolate = Mathf.InverseLerp (rangeLimit, 0, posDistance);
 
 		if (GetComponent <Projector> ().enabled)
-						glimpseCamera.glimpseDistance = rotAngleInterpolate * posDistanceInterpolate;
+						glimpseCamera.glimpseDistance = (rotAngleInterpolate + posDistanceInterpolate) / 2;
 				else
 						glimpseCamera.glimpseDistance = 0;
 	}
