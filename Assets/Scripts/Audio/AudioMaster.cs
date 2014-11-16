@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+
 public class AudioMaster : MonoBehaviour {
 
 	public enum FootstepActions {
@@ -48,7 +49,7 @@ public class AudioMaster : MonoBehaviour {
 		}
 	}
 	
-	public void Awake() {
+	public void Start() {
 		libpdControls.Start();
 
 		wind.Update();
@@ -68,8 +69,13 @@ public class AudioMaster : MonoBehaviour {
 		
 		return AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.transform.position);;
 	}
-	
+
 	public static AudioItem PlayDollUnseenSound(GameObject doll) {
-		return AudioPlayer.PlayContainer("Doll_Voice_Whisper", doll);
+		return AudioPlayer.PlayContainer ("Doll_Voice_Whisper", doll);
 	}
+	
+	/*public static AudioItem PlayDollUnseenSound(GameObject doll) {
+		return PDPlayer.PlayContainer("Dolls", "Doll_Voice_Whisper", doll);
+	}*/
+
 }

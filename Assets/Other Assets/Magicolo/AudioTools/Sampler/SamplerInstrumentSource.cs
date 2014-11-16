@@ -10,7 +10,7 @@ namespace Magicolo.AudioTools {
 		string name;
 		public string Name {
 			get {
-				name = string.Format("{0}{1} ({2})", noteNames[note % 12], Mathf.Floor(note / 12), note);
+				name = noteNames[note % 12] + Mathf.Floor(note / 12) + " (" + note + ")";
 				return name;
 			}
 			set {

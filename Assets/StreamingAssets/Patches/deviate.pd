@@ -1,0 +1,28 @@
+#N canvas 359 195 572 519 10;
+#X obj 122 217 random 100;
+#X obj 107 320 +;
+#X obj 122 239 * 0.2;
+#X obj 122 261 - 10;
+#X obj 107 112 inlet;
+#X obj 107 148 t f b;
+#X obj 245 174 f \$1;
+#X obj 245 149 loadbang;
+#X obj 272 222 * 0.02;
+#X obj 245 196 t f f;
+#X obj 305 150 inlet;
+#X obj 107 342 outlet;
+#X text 85 47 deviation aleatoire de +/- $f1 % sur la valeurs en entrante
+;
+#X connect 0 0 2 0;
+#X connect 1 0 11 0;
+#X connect 2 0 3 0;
+#X connect 3 0 1 1;
+#X connect 4 0 5 0;
+#X connect 5 0 1 0;
+#X connect 5 1 0 0;
+#X connect 6 0 9 0;
+#X connect 7 0 6 0;
+#X connect 8 0 2 1;
+#X connect 9 0 3 1;
+#X connect 9 1 8 0;
+#X connect 10 0 6 0;

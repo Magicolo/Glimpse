@@ -21,7 +21,7 @@ namespace Magicolo.AudioTools {
 		protected override void UpdateVolume() {
 			base.UpdateVolume();
 			
-			pdPlayer.communicator.SendValue(string.Format("UVoice{0}Volume", pdGainManager.voice), Volume);
+			pdPlayer.communicator.SendValue("UVoice" + pdGainManager.voice + "Volume", Volume);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-#N canvas 829 351 336 400 10;
+#N canvas 829 351 336 381 10;
 #X obj 130 260 line~;
 #X obj 130 320 line~;
 #X obj 130 167 r \$1_Volume;
@@ -58,12 +58,14 @@
 #X msg 175 203 20;
 #X msg 59 65 \$1 20;
 #X msg 149 65 \$1 20;
+#X obj 249 210 s Debug;
 #X connect 0 0 9 1;
 #X connect 0 0 11 1;
 #X connect 1 0 10 1;
 #X connect 1 0 12 1;
 #X connect 2 0 22 0;
 #X connect 3 0 30 0;
+#X connect 3 0 35 0;
 #X connect 4 0 28 0;
 #X connect 5 0 11 0;
 #X connect 6 0 20 0;

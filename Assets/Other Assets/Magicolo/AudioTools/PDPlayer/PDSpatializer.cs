@@ -114,7 +114,6 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public void Spatialize() {
-			Logger.Log("Spatialize");
 			if (Source != null) {
 				const float fullFrequencyRange = 20000;
 				const float hrfFactor = 1500;
@@ -152,11 +151,13 @@ namespace Magicolo.AudioTools {
 		public Vector3 GetSourcePosition() {
 			Vector3 sourcePosition = pdPlayer.transform.position;
 			
-			if (source is GameObject) {
-				sourcePosition = ((GameObject)source).transform.position;
-			}
-			else if (source is Vector3) {
-				sourcePosition = ((Vector3)source);
+			if (source != null) {
+				if (source is GameObject) {
+					sourcePosition = ((GameObject)source).transform.position;
+				}
+				else if (source is Vector3) {
+					sourcePosition = ((Vector3)source);
+				}
 			}
 			return sourcePosition;
 		}

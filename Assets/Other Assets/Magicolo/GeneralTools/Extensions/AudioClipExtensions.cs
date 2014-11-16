@@ -5,7 +5,7 @@ public static class AudioClipExtensions {
 
 	public static AudioClip Add(this AudioClip audioClip, AudioClip otherAudioClip) {
 		int length = audioClip.samples >= otherAudioClip.samples ? audioClip.samples : otherAudioClip.samples;
-		AudioClip clipSum = AudioClip.Create(string.Format("{0} + {1}", audioClip.name, otherAudioClip.name), length, audioClip.channels, audioClip.frequency, true, false);
+		AudioClip clipSum = AudioClip.Create(audioClip.name + " + " + otherAudioClip.name, length, audioClip.channels, audioClip.frequency, true, false);
 		
 		float[] dataSum;
 		float[] otherData;

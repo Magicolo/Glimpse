@@ -11,6 +11,7 @@ namespace Magicolo.AudioTools {
 		[HideInInspector] public bool readerSwitch;
 		[HideInInspector] public bool initialized;
 		[HideInInspector] public bool applicationFocused;
+		[HideInInspector] public bool editorPaused;
 		[HideInInspector] public PDPlayer pdPlayer;
 	
 		GCHandle dataHandle;
@@ -28,7 +29,7 @@ namespace Magicolo.AudioTools {
 			dataPtr = IntPtr.Zero;
 		}
 		
-		void OnApplicationFocus(bool focus){
+		void OnApplicationFocus(bool focus) {
 			applicationFocused = focus || Application.isEditor;
 		}
 		
@@ -38,16 +39,16 @@ namespace Magicolo.AudioTools {
 				dataPtr = dataHandle.AddrOfPinnedObject();
 			}
 			
-			if (PDGainManager.soundNameVoice.Count > 0 && !readerSwitch){
+			if (PDGainManager.soundNameVoice.Count > 0 && !readerSwitch) {
 				readerSwitch = true;
 				pdPlayer.communicator.SendValue("UReaderSwitch", 1);
 			}
-			else if (PDGainManager.soundNameVoice.Count == 0 && readerSwitch){
+			else if (PDGainManager.soundNameVoice.Count == 0 && readerSwitch) {
 				readerSwitch = false;
 				pdPlayer.communicator.SendValue("UReaderSwitch", 0);
 			}
 			
-			if (pdPlayer.bridge.initialized && applicationFocused) {
+			if (pdPlayer.bridge.initialized && applicationFocused && !editorPaused) {
 				pdPlayer.communicator.WriteArray("UMasterReceive", dataSum);
 				LibPD.Process(pdPlayer.bridge.ticks, dataPtr, dataPtr);
 			}
