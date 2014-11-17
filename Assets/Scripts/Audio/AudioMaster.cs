@@ -64,10 +64,10 @@ public class AudioMaster : MonoBehaviour {
 		return AudioPlayer.PlayContainer(containerName, source);
 	}
 	
-	public static AudioItem PlayPlayerFootstep(FootstepActions footstepAction) {
-		Instance.footstepAction = footstepAction;
+	public static void PlayPlayerFootstep(FootstepActions footstepAction) {
+		// Instance.footstepAction = footstepAction;
 		
-		return AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
+		// return AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
 	}
 
 	/*public static AudioItem PlayDollUnseenSound(GameObject doll) {
