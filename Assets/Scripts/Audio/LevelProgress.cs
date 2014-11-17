@@ -11,7 +11,7 @@ public class LevelProgress: MonoBehaviour {
 	int countFrames = 0;
 	
 	void AttachScript(){
-		GameObject[] triggers = new GameObject[4];
+		GameObject[] triggers = new GameObject[5];
 
 		for (int i = 0; i < triggers.Length; i++) 
 		{

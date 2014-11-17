@@ -36,6 +36,11 @@ public class AreaTriggers : MonoBehaviour {
 			area = 4;
 			PDPlayer.SendValue("glimpse_area", area);
 		}
+
+		if (collider.name == "Trigger_5") {
+			area = 5;
+			PDPlayer.SendValue("glimpse_area", area);
+		}
 	}
 
 	void OnTriggerExit(Collider other){
@@ -43,17 +48,10 @@ public class AreaTriggers : MonoBehaviour {
 			area = areas[1];
 				PDPlayer.SendValue("glimpse_area", area);
 		}
-	}
-
-
-
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+		if (collider.name == "Trigger_5") {
+			area = areas[1];
+			PDPlayer.SendValue("glimpse_area", area);
+		}
 	}
 }
+
