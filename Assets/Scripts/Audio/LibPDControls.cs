@@ -11,6 +11,7 @@ public class LibPDControls {
 		PDPlayer.Play("Wind");
 		PDPlayer.Play("Music");
 		PDPlayer.Play("Crickets");
+		PDPlayer.Play ("Glimpses");
 
 		//controle crickets et wind
 		PDPlayer.Play("AMB");
