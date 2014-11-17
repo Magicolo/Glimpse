@@ -90,6 +90,7 @@ namespace Magicolo.AudioTools {
 		public Object stateHolder;
 		public string statePath;
 		public string stateName;
+		public int stateIndex;
 		
 		public AudioOption[] audioOptions;
 		

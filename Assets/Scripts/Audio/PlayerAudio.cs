@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerAudio : MonoBehaviour {
 
-	public void  PlayPlayerFootstep(AudioMaster.FootstepActions action) {
-		// return AudioMaster.PlayPlayerFootstep(action);;
+	public void PlayPlayerFootstep(AudioMaster.FootstepActions action) {
+		 AudioMaster.PlayPlayerFootstep(action);;
 	}
 }

@@ -17,6 +17,8 @@ namespace Magicolo.AudioTools {
 		public CoroutineHolder coroutineHolder;
 		public AudioListener listener;
 		
+		public bool initialized;
+		
 		protected virtual void Awake() {
 			if (Application.isPlaying) {
 				audioPlayer = gameObject.GetOrAddComponent<AudioPlayer>();

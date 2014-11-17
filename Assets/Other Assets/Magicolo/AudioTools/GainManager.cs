@@ -5,7 +5,7 @@ namespace Magicolo.AudioTools {
 	public class GainManager : MonoBehaviour {
 
 		[Min] public float volume = 1;
-		public GameObject source;
+		public Transform source;
 		
 		[HideInInspector] public SingleAudioItem audioItem;
 		[HideInInspector] public Magicolo.AudioTools.Player player;
@@ -13,7 +13,7 @@ namespace Magicolo.AudioTools {
 		Vector3 listenerRelativePosition;
 	
 		public virtual void Initialize(object source, SingleAudioItem audioItem, Magicolo.AudioTools.Player player) {
-			this.source = source as GameObject;
+			this.source = source as GameObject == null ? null : ((GameObject)source).transform;
 			this.audioItem = audioItem;
 			this.player = player;
 			
@@ -37,7 +37,7 @@ namespace Magicolo.AudioTools {
 			}
 			
 			if (source != null) {
-				transform.position = source.transform.position;
+				transform.position = source.position;
 			}
 		}
 		

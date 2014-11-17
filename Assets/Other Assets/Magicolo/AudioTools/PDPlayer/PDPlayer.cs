@@ -66,6 +66,7 @@ public class PDPlayer : Magicolo.AudioTools.Player {
 	
 	protected virtual void Start() {
 		SingletonCheck(Instance);
+		initialized = true;
 	}
 	
 	protected override void OnLevelWasLoaded(int level) {

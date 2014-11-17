@@ -48,6 +48,7 @@ namespace Magicolo.EditorTools {
 			}
 			
 			serializedObject.ApplyModifiedProperties();
+			
 			if (EditorGUI.EndChangeCheck()) {
 				EditorUtility.SetDirty(target);
 			}
@@ -721,6 +722,7 @@ namespace Magicolo.EditorTools {
 			else {
 				clearCallback(property);
 			}
+			deleteBreak = true;
 		}
 		
 		public void ClearArray(SerializedProperty arrayProperty, ClearCallback clearCallback = null) {
@@ -732,6 +734,7 @@ namespace Magicolo.EditorTools {
 			else {
 				clearCallback(arrayProperty);
 			}
+			deleteBreak = true;
 		}
 		
 		public void ReorderArray(SerializedProperty arrayProperty, int soureceIndex, int targetIndex, ReorderCallback reorderCallback = null) {
@@ -754,7 +757,6 @@ namespace Magicolo.EditorTools {
 		}
 		#endregion
 	
-			
 		void OnPropertyCleared(object data) {
 			ContextMenuClearData contextData = data as ContextMenuClearData;
 			Clear(contextData.property, contextData.clearCallback);
@@ -768,6 +770,10 @@ namespace Magicolo.EditorTools {
 			public ContextMenuClearData(SerializedProperty property, ClearCallback clearCallback) {
 				this.property = property;
 				this.clearCallback = clearCallback;
+			}
+
+			public ContextMenuClearData(SerializedProperty property) {
+				this.property = property;
 			}
 		}
 	}

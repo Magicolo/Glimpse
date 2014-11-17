@@ -7,14 +7,16 @@ namespace Magicolo.AudioTools {
 	public class MultipleAudioItem : AudioItem {
 		
 		public List<AudioItem> audioItems = new List<AudioItem>();
+		protected readonly string rampVolumeName;
+		protected readonly string rampPitchName;
 		
 		public MultipleAudioItem(string name, int id, AudioItemManager itemManager, Magicolo.AudioTools.Player player)
 			: base(name, id, itemManager, player) {
+			rampVolumeName = "RampVolume" + name + id;
+			rampPitchName = "RampPitch" + name + id;
 		}
 		
 		public virtual void Update() {
-			UpdateActions();
-			
 			if (RemoveStoppedAudioItems() && State != AudioStates.Stopped && audioItems.Count == 0) {
 				Stop();
 			}
@@ -35,14 +37,12 @@ namespace Magicolo.AudioTools {
 		public virtual bool RemoveStoppedAudioItems() {
 			bool allStopped = true;
 			
-			foreach (AudioItem audioItem in audioItems.ToArray()) {
-				if (audioItem != null) {
-					if (audioItem.State == AudioStates.Stopped) {
-						audioItems.Remove(audioItem);
-					}
-					else {
-						allStopped = false;
-					}
+			for (int i = 0; i < audioItems.Count; i++) {
+				if (audioItems[i].State == AudioStates.Stopped) {
+					audioItems.RemoveAt(i);
+				}
+				else {
+					allStopped = false;
 				}
 			}
 			return allStopped;
@@ -59,10 +59,10 @@ namespace Magicolo.AudioTools {
 			}
 			
 			if (syncMode == SyncMode.None) {
-				actions.Add(new AudioDelayedAction(delay, player.metronome, actionType, this, audioOptions));
+				actions.Add(new AudioDelayedAction(delay, player.metronome, actionType, actions, this, audioOptions));
 			}
 			else {
-				actions.Add(new AudioSyncedDelayedAction(delay, syncMode, player.metronome, actionType, this, audioOptions));
+				actions.Add(new AudioSyncedDelayedAction(delay, syncMode, player.metronome, actionType, actions, this, audioOptions));
 			}
 			
 			return true;
@@ -119,28 +119,28 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public override void SetVolume(float targetVolume, float time) {
-			player.coroutineHolder.RemoveCoroutines("RampVolume" + Name + Id);
-			player.coroutineHolder.AddCoroutine("RampVolume" + Name + Id, RampVolume(Volume, targetVolume, time));
+			player.coroutineHolder.RemoveCoroutines(rampVolumeName);
+			player.coroutineHolder.AddCoroutine(rampVolumeName, RampVolume(Volume, targetVolume, time));
 		}
 		
 		public override void SetVolume(float targetVolume) {
-			player.coroutineHolder.RemoveCoroutines("RampVolume" + Name + Id);
+			player.coroutineHolder.RemoveCoroutines(rampVolumeName);
 			Volume = targetVolume;
 			UpdateVolume();
 		}
 
 		public override void SetPitch(float targetPitch, float time, float quantizeStep) {
-			player.coroutineHolder.RemoveCoroutines("RampPitch" + Name + Id);
-			player.coroutineHolder.AddCoroutine("RampPitch" + Name + Id, RampPitch(Pitch, targetPitch, time, quantizeStep));
+			player.coroutineHolder.RemoveCoroutines(rampPitchName);
+			player.coroutineHolder.AddCoroutine(rampPitchName, RampPitch(Pitch, targetPitch, time, quantizeStep));
 		}
 		
 		public override void SetPitch(float targetPitch, float time) {
-			player.coroutineHolder.RemoveCoroutines("RampPitch" + Name + Id);
-			player.coroutineHolder.AddCoroutine("RampPitch" + Name + Id, RampPitch(Pitch, targetPitch, time, 0));
+			player.coroutineHolder.RemoveCoroutines(rampPitchName);
+			player.coroutineHolder.AddCoroutine(rampPitchName, RampPitch(Pitch, targetPitch, time, 0));
 		}
 		
 		public override void SetPitch(float targetPitch) {
-			player.coroutineHolder.RemoveCoroutines("RampPitch" + Name + Id);
+			player.coroutineHolder.RemoveCoroutines(rampPitchName);
 			Pitch = targetPitch;
 			UpdatePitch();
 		}

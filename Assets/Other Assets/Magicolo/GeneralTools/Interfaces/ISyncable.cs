@@ -2,7 +2,7 @@
 using System.Collections;
 
 namespace Magicolo.GeneralTools {
-	public interface ITickable {
+	public interface ISyncable {
 		
 		void TickEvent();
 		

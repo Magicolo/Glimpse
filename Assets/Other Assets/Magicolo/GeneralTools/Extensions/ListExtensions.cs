@@ -13,6 +13,15 @@ public static class ListExtensions {
 		return item;
 	}
 	
+	public static T PopLast<T>(this List<T> list) {
+		if (list == null || list.Count == 0)
+			return default(T);
+			
+		T item = list[list.Count - 1];
+		list.RemoveAt(list.Count - 1);
+		return item;
+	}
+	
 	public static T PopRandom<T>(this List<T> list) {
 		if (list == null || list.Count == 0)
 			return default(T);

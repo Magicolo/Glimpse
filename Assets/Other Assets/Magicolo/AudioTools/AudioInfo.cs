@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
 using Magicolo.GeneralTools;
 
 namespace Magicolo.AudioTools {
 	[System.Serializable]
-	public class AudioInfo : INamable {
+	public class AudioInfo : INamable, ICloneable {
 
 		[SerializeField]
 		string name;
@@ -70,17 +71,28 @@ namespace Magicolo.AudioTools {
 		
 		public AudioPlayer audioPlayer;
 
-		public AudioInfo(AudioSource source, AudioSetup defaultAudioSetup, AudioPlayer audioPlayer) {
-			this.name = defaultAudioSetup.name;
+		public AudioInfo(AudioSource source, string clipPath, AudioSetup audioSetup, float fadeIn, AnimationCurve fadeInCurve, float fadeOut, AnimationCurve fadeOutCurve, float randomVolume, float randomPitch, bool doNotKill, AudioPlayer audioPlayer) {
+			this.name = audioSetup.name;
 			this.source = source;
-			this.audioSetup = defaultAudioSetup;
+			this.clipPath = clipPath;
+			this.audioSetup = audioSetup;
+			this.fadeIn = fadeIn;
+			this.fadeInCurve = fadeInCurve;
+			this.fadeOut = fadeOut;
+			this.fadeOutCurve = fadeOutCurve;
+			this.randomVolume = randomVolume;
+			this.randomPitch = randomPitch;
+			this.doNotKill = doNotKill;
 			this.audioPlayer = audioPlayer;
 		}
 		
-		public AudioInfo(AudioInfo audioInfo) {
-			this.Copy(audioInfo);
+		public AudioInfo(AudioSource source, AudioSetup audioSetup, AudioPlayer audioPlayer) {
+			this.name = audioSetup.name;
+			this.source = source;
+			this.audioSetup = audioSetup;
+			this.audioPlayer = audioPlayer;
 		}
-
+		
 		public void ConvertToAudioOptions() {
 			defaultAudioOptions = new [] {
 				AudioOption.Mute(Source.mute),
@@ -137,11 +149,11 @@ namespace Magicolo.AudioTools {
 					break;
 				case AudioOption.OptionTypes.RandomVolume:
 					randomVolume = option.GetValue<float>();
-					audioSource.volume += Random.Range(-randomVolume, randomVolume);
+					audioSource.volume += UnityEngine.Random.Range(-randomVolume, randomVolume);
 					break;
 				case AudioOption.OptionTypes.RandomPitch:
 					randomPitch = option.GetValue<float>();
-					audioSource.pitch += Random.Range(-randomPitch, randomPitch);
+					audioSource.pitch += UnityEngine.Random.Range(-randomPitch, randomPitch);
 					break;
 				case AudioOption.OptionTypes.Delay:
 					delay = option.GetValue<float>();
@@ -201,6 +213,10 @@ namespace Magicolo.AudioTools {
 					audioSource.pan = option.GetValue<float>();
 					break;
 			}
+		}
+
+		public object Clone() {
+			return new AudioInfo(source, clipPath, audioSetup, fadeIn, fadeInCurve, fadeOut, fadeOutCurve, randomVolume, randomPitch, doNotKill, audioPlayer);
 		}
 	}
 }

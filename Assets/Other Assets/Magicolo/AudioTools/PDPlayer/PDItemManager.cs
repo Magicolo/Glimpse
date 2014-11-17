@@ -125,7 +125,6 @@ namespace Magicolo.AudioTools {
 			PDSingleAudioItem audioItem = new PDSingleAudioItem(currentModuleName, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, pdPlayer);
 			
 			gainManager.Initialize(source, audioItem, pdPlayer);
-			audioItem.Update();
 			inactiveSingleAudioItems.Add(audioItem);
 			return audioItem;
 		}

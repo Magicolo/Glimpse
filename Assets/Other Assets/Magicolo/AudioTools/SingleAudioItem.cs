@@ -26,18 +26,15 @@ namespace Magicolo.AudioTools {
 			this.gameObject = audioSource.gameObject;
 			this.coroutineHolder = coroutineHolder;
 			this.gainManager = gainManager;
+			UpdateName();
 		}
 		
 		public virtual void Update() {
-			UpdateActions();
-			
 			if (State == AudioStates.Playing && !audioSource.loop) {
 				if (audioSource.clip == null || (audioSource.pitch > 0 && audioSource.time >= audioSource.clip.length - audioInfo.fadeOut) || (audioSource.pitch < 0 && audioSource.time <= audioInfo.fadeOut)) {
 					Stop();
 				}
 			}
-			
-			gameObject.name = audioInfo.Name + " (" + State + ")";
 		}
 		
 		protected override void UpdateVolume() {
@@ -48,6 +45,12 @@ namespace Magicolo.AudioTools {
 			audioSource.pitch = Pitch;
 		}
 
+		protected void UpdateName() {
+			#if UNITY_EDITOR
+			gameObject.name = audioInfo.Name + " (" + State + ")";
+			#endif
+		}
+		
 		protected virtual bool TryAddDelayedAction(AudioAction.ActionTypes actionType, params AudioOption[] audioOptions) {
 			AudioOption delayOption = audioOptions.PopOptionOfType(AudioOption.OptionTypes.Delay, out audioOptions);
 			AudioOption syncOption = audioOptions.PopOptionOfType(AudioOption.OptionTypes.SyncMode, out audioOptions);
@@ -59,10 +62,10 @@ namespace Magicolo.AudioTools {
 			}
 			
 			if (syncMode == SyncMode.None) {
-				actions.Add(new AudioDelayedAction(delay, player.metronome, actionType, this, audioOptions));
+				actions.Add(new AudioDelayedAction(delay, player.metronome, actionType, actions, this, audioOptions));
 			}
 			else {
-				actions.Add(new AudioSyncedDelayedAction(delay, syncMode, player.metronome, actionType, this, audioOptions));
+				actions.Add(new AudioSyncedDelayedAction(delay, syncMode, player.metronome, actionType, actions, this, audioOptions));
 			}
 			
 			audioInfo.delay = 0;
@@ -94,6 +97,7 @@ namespace Magicolo.AudioTools {
 						State = pausedState;
 					}
 				}
+				UpdateName();
 			}
 			startAudioOptions = new AudioOption[0];
 		}
@@ -110,6 +114,7 @@ namespace Magicolo.AudioTools {
 					pausedState = State;
 					base.Pause();
 				}
+				UpdateName();
 			}
 		}
 
@@ -120,6 +125,7 @@ namespace Magicolo.AudioTools {
 				if (State != AudioStates.Stopped || State != AudioStates.FadingOut) {
 					coroutineHolder.AddCoroutine("FadeOut", FadeOut(0, audioInfo.fadeOut, audioInfo.fadeOutCurve));
 				}
+				UpdateName();
 			}
 		}
 
@@ -131,7 +137,7 @@ namespace Magicolo.AudioTools {
 				gainManager.Deactivate();
 				itemManager.Deactivate(this);
 				coroutineHolder.RemoveAllCoroutines();
-				Update();
+				UpdateName();
 			}
 		}
 		
@@ -167,6 +173,7 @@ namespace Magicolo.AudioTools {
 		#region IEnumerators
 		public virtual IEnumerator FadeIn(float targetVolume, float time, AnimationCurve curve) {
 			State = AudioStates.FadingIn;
+			UpdateName();
 			audioSource.Play();
 			itemManager.Activate(this);
 			gainManager.Activate(); // The gainManager must be activated after the itemManager for the PDPlayer to work correctly.
@@ -177,10 +184,12 @@ namespace Magicolo.AudioTools {
 			}
 			
 			base.Play();
+			UpdateName();
 		}
 		
 		public virtual IEnumerator FadeOut(float targetVolume, float time, AnimationCurve curve) {
 			State = AudioStates.FadingOut;
+			UpdateName();
 			coroutineHolder.RemoveCoroutines("FadeIn");
 			
 			IEnumerator fade = FadeVolume(audioSource.volume, targetVolume, time, curve);
@@ -193,7 +202,7 @@ namespace Magicolo.AudioTools {
 			gainManager.Deactivate();
 			itemManager.Deactivate(this);
 			coroutineHolder.RemoveAllCoroutines();
-			Update();
+			UpdateName();
 		}
 
 		public virtual IEnumerator FadeVolume(float startVolume, float targetVolume, float time, AnimationCurve curve) {

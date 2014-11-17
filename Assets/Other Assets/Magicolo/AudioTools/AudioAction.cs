@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using System.Collections;
 using Magicolo.AudioTools;
 using Magicolo.GeneralTools;
 
 namespace Magicolo.AudioTools {
 	[System.Serializable]
-	public abstract class AudioAction : ITickable {
+	public abstract class AudioAction : ISyncable {
 
 		public enum ActionTypes {
 			Play,
@@ -17,12 +18,14 @@ namespace Magicolo.AudioTools {
 		
 		public Metronome metronome;
 		public ActionTypes type;
+		public List<AudioAction> actions;
 		public AudioItem audioItem;
 		public AudioOption[] audioOptions;
-		
-		protected AudioAction(Metronome metronome, AudioAction.ActionTypes type, AudioItem audioItem, params AudioOption[] audioOptions) {
+
+		protected AudioAction(Metronome metronome, AudioAction.ActionTypes type, List<AudioAction> actions, AudioItem audioItem, params AudioOption[] audioOptions) {
 			this.metronome = metronome;
 			this.type = type;
+			this.actions = actions;
 			this.audioItem = audioItem;
 			this.audioOptions = audioOptions;
 			
@@ -47,7 +50,9 @@ namespace Magicolo.AudioTools {
 					audioItem.Stop(audioOptions);
 					break;
 			}
+			
 			isApplied = true;
+			actions.Remove(this);
 			metronome.Unsubscribe(this);
 		}
 		

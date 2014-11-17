@@ -381,10 +381,14 @@ namespace Magicolo.AudioTools {
 						Enum selectedState = string.IsNullOrEmpty(currentSubContainer.stateName) ? null : Enum.GetNames(enumType).Contains(currentSubContainer.stateName) ? (Enum)Enum.Parse(enumType, currentSubContainer.stateName) : null;
 						
 						if (selectedState == null) {
-							currentSubContainer.stateName = EditorGUILayout.EnumPopup("State", defaultState).ToString();
+							Enum selectedEnum = EditorGUILayout.EnumPopup("State", defaultState);
+							currentSubContainer.stateName = selectedEnum.ToString();
+							currentSubContainer.stateIndex = selectedEnum.GetHashCode();
 						}
 						else {
-							currentSubContainer.stateName = EditorGUILayout.EnumPopup("State", selectedState).ToString();
+							Enum selectedEnum = EditorGUILayout.EnumPopup("State", selectedState);
+							currentSubContainer.stateName = selectedEnum.ToString();
+							currentSubContainer.stateIndex = selectedEnum.GetHashCode();
 						}
 						return;
 					}

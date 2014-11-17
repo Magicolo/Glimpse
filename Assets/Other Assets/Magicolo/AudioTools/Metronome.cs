@@ -59,7 +59,7 @@ namespace Magicolo.AudioTools {
 		double nextMeasureTime;
 		double beatDuration;
 		double measureDuration;
-		List<ITickable> tickables = new List<ITickable>();
+		List<ISyncable> tickables = new List<ISyncable>();
 		IEnumerator ticker;
 	
 		void Awake() {
@@ -104,11 +104,11 @@ namespace Magicolo.AudioTools {
 			isPlaying = false;
 		}
 		
-		public void Subscribe(ITickable tickable) {
+		public void Subscribe(ISyncable tickable) {
 			tickables.Add(tickable);
 		}
 		
-		public void Unsubscribe(ITickable tickable) {
+		public void Unsubscribe(ISyncable tickable) {
 			tickables.Remove(tickable);
 		}
 		
@@ -164,25 +164,25 @@ namespace Magicolo.AudioTools {
 		}
 		
 		void TickEvent() {
-			foreach (ITickable tickable in tickables.ToArray()) {
-				if (tickable != null) {
-					tickable.TickEvent();
+			for (int i = 0; i < tickables.Count; i++) {
+				if (tickables[i] != null) {
+					tickables[i].TickEvent();
 				}
 			}
 		}
 		
 		void BeatEvent() {
-			foreach (ITickable tickable in tickables.ToArray()) {
-				if (tickable != null) {
-					tickable.BeatEvent(CurrentBeat);
+			for (int i = 0; i < tickables.Count; i++) {
+				if (tickables[i] != null) {
+					tickables[i].BeatEvent(CurrentBeat);
 				}
 			}
 		}
 
 		void MeasureEvent() {
-			foreach (ITickable tickable in tickables.ToArray()) {
-				if (tickable != null) {
-					tickable.MeasureEvent(CurrentMeasure);
+			for (int i = 0; i < tickables.Count; i++) {
+				if (tickables[i] != null) {
+					tickables[i].MeasureEvent(CurrentMeasure);
 				}
 			}
 		}

@@ -35,9 +35,6 @@ namespace Magicolo.AudioTools {
 					clip = audioSetup.Clip;
 					audioSetupName = audioSetup.name;
 				}
-//				else {
-//					audioSetupName = "";
-//				}
 			}
 		}
 		public AudioClip referenceClip;

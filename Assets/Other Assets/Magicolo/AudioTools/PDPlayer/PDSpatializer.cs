@@ -76,8 +76,14 @@ namespace Magicolo.AudioTools {
 			}
 		}
 		
-		protected PDPlayer pdPlayer;
+		public PDPlayer pdPlayer;
 
+		string hrfLeftName;
+		string hrfRightName;
+		string panLeftName;
+		string panRightName;
+		string attenuationName;
+		
 		public PDSpatializer(string moduleName, PDEditorModule editorModule, PDPlayer pdPlayer) {
 			this.moduleName = moduleName;
 			this.source = editorModule.Source;
@@ -86,6 +92,7 @@ namespace Magicolo.AudioTools {
 			this.maxDistance = editorModule.MaxDistance;
 			this.panLevel = editorModule.PanLevel;
 			this.pdPlayer = pdPlayer;
+			SetNames();
 		}
 		
 		public PDSpatializer(PDEditorModule editorModule, PDPlayer pdPlayer) {
@@ -96,14 +103,15 @@ namespace Magicolo.AudioTools {
 			this.maxDistance = editorModule.MaxDistance;
 			this.panLevel = editorModule.PanLevel;
 			this.pdPlayer = pdPlayer;
+			SetNames();
 		}
 		
 		public void Initialize() {
-			pdPlayer.communicator.SendValue(ModuleName + "_HRFLeft", 20000);
-			pdPlayer.communicator.SendValue(ModuleName + "_HRFRight", 20000);
-			pdPlayer.communicator.SendValue(ModuleName + "_PanLeft", 1);
-			pdPlayer.communicator.SendValue(ModuleName + "_PanRight", 1);
-			pdPlayer.communicator.SendValue(ModuleName + "_Attenuation", 1);
+			pdPlayer.communicator.SendValue(hrfLeftName, 20000);
+			pdPlayer.communicator.SendValue(hrfRightName, 20000);
+			pdPlayer.communicator.SendValue(panLeftName, 1);
+			pdPlayer.communicator.SendValue(panRightName, 1);
+			pdPlayer.communicator.SendValue(attenuationName, 1);
 		}
 		
 		public void Update() {
@@ -139,11 +147,11 @@ namespace Magicolo.AudioTools {
 					attenuation = Mathf.Pow((1F - Mathf.Pow(adjustedDistance, 1F / curveDepth)), curveDepth);
 				}
 			
-				pdPlayer.communicator.SendValue(ModuleName + "_HRFLeft", hrfLeft);
-				pdPlayer.communicator.SendValue(ModuleName + "_HRFRight", hrfRight);
-				pdPlayer.communicator.SendValue(ModuleName + "_PanLeft", panLeft);
-				pdPlayer.communicator.SendValue(ModuleName + "_PanRight", panRight);
-				pdPlayer.communicator.SendValue(ModuleName + "_Attenuation", attenuation);
+				pdPlayer.communicator.SendValue(hrfLeftName, hrfLeft);
+				pdPlayer.communicator.SendValue(hrfRightName, hrfRight);
+				pdPlayer.communicator.SendValue(panLeftName, panLeft);
+				pdPlayer.communicator.SendValue(panRightName, panRight);
+				pdPlayer.communicator.SendValue(attenuationName, attenuation);
 			}
 		}
 	
@@ -170,6 +178,14 @@ namespace Magicolo.AudioTools {
 				}
 			}
 			return changed;
+		}
+
+		public void SetNames() {
+			hrfLeftName = ModuleName + "_HRFLeft";
+			hrfRightName = ModuleName + "_HRFRight";
+			panLeftName = ModuleName + "_PanLeft";
+			panRightName = ModuleName + "_PanRight";
+			attenuationName = ModuleName + "_Attenuation";
 		}
 	}
 }

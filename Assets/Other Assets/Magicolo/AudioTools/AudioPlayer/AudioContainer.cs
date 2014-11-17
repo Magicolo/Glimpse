@@ -36,7 +36,9 @@ namespace Magicolo.AudioTools {
 		Dictionary<int, AudioSubContainer> idDict;
 		Dictionary<int, AudioSubContainer> IdDict {
 			get {
-				BuildIDDict();
+				if (idDict == null) {
+					BuildIDDict();
+				}
 				return idDict;
 			}
 		}
@@ -47,6 +49,7 @@ namespace Magicolo.AudioTools {
 		
 		public void BuildIDDict() {
 			idDict = new Dictionary<int, AudioSubContainer>();
+			
 			foreach (AudioSubContainer subContainer in subContainers) {
 				idDict[subContainer.id] = subContainer;
 			}
@@ -56,13 +59,9 @@ namespace Magicolo.AudioTools {
 			idCounter += 1;
 			return idCounter;
 		}
-		
+
 		public AudioSubContainer GetSubContainerWithID(int id) {
-			AudioSubContainer subContainer = null;
-			if (IdDict.ContainsKey(id)) {
-				subContainer = IdDict[id];
-			}
-			return subContainer;
+			return IdDict[id];
 		}
 
 		public AudioSubContainer[] IdsToSubContainers(List<int> ids) {

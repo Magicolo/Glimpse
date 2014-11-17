@@ -160,11 +160,9 @@ namespace Magicolo.GeneralTools {
 				for (int i = 0; i < keys.Count; i++) {
 					for (int j = 0; j < coroutines[keys[i]].Count; j++) {
 						str += keys[i] + " : " + coroutineStates[keys[i]][j];
-						if (j < coroutines[keys[i]].Count - 1)
-							str += ", ";
+						if (j < coroutines[keys[i]].Count - 1) str += ", ";
 					}
-					if (i < keys.Count - 1)
-						str += ", ";
+					if (i < keys.Count - 1) str += ", ";
 				}
 			}
 			return str + "}";

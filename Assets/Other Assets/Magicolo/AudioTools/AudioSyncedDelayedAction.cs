@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using System.Collections;
 using Magicolo.GeneralTools;
 
@@ -8,8 +9,8 @@ namespace Magicolo.AudioTools {
 
 		public int delay;
 		
-		public AudioSyncedDelayedAction(float delay, SyncMode syncMode, Metronome metronome, ActionTypes type, AudioItem audioItem, params AudioOption[] audioOptions)
-			: base(metronome, type, audioItem, audioOptions) {
+		public AudioSyncedDelayedAction(float delay, SyncMode syncMode, Metronome metronome, ActionTypes type, List<AudioAction> actions, AudioItem audioItem, params AudioOption[] audioOptions)
+			: base(metronome, type, actions, audioItem, audioOptions) {
 			
 			this.delay = metronome.ConvertToBeats(delay, syncMode);
 		}

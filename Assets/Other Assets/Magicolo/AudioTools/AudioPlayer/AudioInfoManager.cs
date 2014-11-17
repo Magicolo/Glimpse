@@ -26,7 +26,7 @@ namespace Magicolo.AudioTools {
 		public AudioInfo GetAudioInfo(string audioInfoName) {
 			AudioInfo audioInfo = null;
 			try {
-				audioInfo = new AudioInfo(audioInfoDict[audioInfoName]);
+				audioInfo = audioInfoDict[audioInfoName].Clone() as AudioInfo;
 			}
 			catch {
 				Debug.LogError(string.Format("Sound named {0} was not found.", audioInfoName));

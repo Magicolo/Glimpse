@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Magicolo.AudioTools;
+using Magicolo.GeneralTools;
 
-// TODO Add the ability to subscribe/unsubscribe to metronome events.
 // FIXME Some AudioItems can be updated multiple times per frame (ex: Sampler plays a Pure Data sound)
+// TODO Verify that listener volume is correctly set when changing scenes
 
 [ExecuteInEditMode]
 public class AudioPlayer : Magicolo.AudioTools.Player {
@@ -21,7 +22,7 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 		}
 	}
 	
-	AudioPlayer(){
+	AudioPlayer() {
 	}
 	
 	#region Components
@@ -30,10 +31,15 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	public AudioPlayerItemManager itemManager;
 	#endregion
 	
+	float listenerVolume;
+	
 	protected override void Awake() {
 		base.Awake();
 		
 		if (Application.isPlaying) {
+			listenerVolume = AudioListener.volume;
+			AudioListener.volume = 0;
+			
 			infoManager = new AudioInfoManager(Instance);
 			containerManager = new AudioContainerManager(Instance);
 			itemManager = new AudioPlayerItemManager(Instance);
@@ -53,6 +59,8 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 		SingletonCheck(Instance);
 		if (Application.isPlaying) {
 			metronome.Play();
+			AudioListener.volume = listenerVolume;
+			initialized = true;
 		}
 	}
 	
@@ -225,5 +233,21 @@ public class AudioPlayer : Magicolo.AudioTools.Player {
 	/// <param name="beatsPerMeasure">The number of beats required before a measure event is triggered.</param>
 	public static void SetTempo(float beatsPerMinute, int beatsPerMeasure) {
 		Instance.metronome.SetTempo(beatsPerMinute, beatsPerMeasure);
+	}
+
+	/// <summary>
+	/// Subscribes an implementation of the ITickable interface for it to receive metronome events.
+	/// </summary>
+	/// <param name="tickable"></param>
+	public static void SubscribeToMetronome(ISyncable tickable) {
+		Instance.metronome.Subscribe(tickable);
+	}
+	
+	/// <summary>
+	/// Unsubscribes an implementation of the ITickable interface for it to stop receiving metronome events.
+	/// </summary>
+	/// <param name="tickable"></param>
+	public static void UnsubscribeToMetronome(ISyncable tickable) {
+		Instance.metronome.Unsubscribe(tickable);
 	}
 }

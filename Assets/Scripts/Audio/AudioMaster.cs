@@ -37,9 +37,11 @@ public class AudioMaster : MonoBehaviour {
 		}
 	}
 	
+	
 	public LibPDControls libpdControls;
 	public Wind wind;
 	public Crickets crickets;
+	public WaterFalls waterFalls;
 	
 	static AudioMaster instance;
 	static AudioMaster Instance {
@@ -51,6 +53,7 @@ public class AudioMaster : MonoBehaviour {
 	
 	public void Start() {
 		libpdControls.Start();
+		waterFalls.Start();
 
 		wind.Update();
 		crickets.Update();
@@ -65,17 +68,12 @@ public class AudioMaster : MonoBehaviour {
 	}
 	
 	public static void PlayPlayerFootstep(FootstepActions footstepAction) {
-		// Instance.footstepAction = footstepAction;
-		
-		// return AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
+		Instance.footstepAction = footstepAction;
+		AudioPlayer.PlayContainer("Player_Footstep", Instance.playerAudio.gameObject);
 	}
 
-	/*public static AudioItem PlayDollUnseenSound(GameObject doll) {
-		return AudioPlayer.PlayContainer ("Doll_Voice_Whisper", doll);
-	}*/
-	
-	public static AudioItem PlayDollUnseenSound(GameObject doll) {
-		return PDPlayer.PlayContainer("Dolls", "Doll_Voice_Whisper", doll);
+	public static void PlayDollUnseenSound(GameObject doll) {
+		PDPlayer.PlayContainer("Dolls", "Doll_Voice_Whisper", doll);
 	}
 
 }

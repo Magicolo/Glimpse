@@ -33,24 +33,26 @@ namespace Magicolo.AudioTools {
 			applicationFocused = focus || Application.isEditor;
 		}
 		
-		void OnAudioFilterRead(float[] data, int channels) {		
-			if (dataPtr == IntPtr.Zero) {
-				dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-				dataPtr = dataHandle.AddrOfPinnedObject();
-			}
+		void OnAudioFilterRead(float[] data, int channels) {
+			if (pdPlayer.initialized) {
+				if (dataPtr == IntPtr.Zero) {
+					dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+					dataPtr = dataHandle.AddrOfPinnedObject();
+				}
 			
-			if (PDGainManager.soundNameVoice.Count > 0 && !readerSwitch) {
-				readerSwitch = true;
-				pdPlayer.communicator.SendValue("UReaderSwitch", 1);
-			}
-			else if (PDGainManager.soundNameVoice.Count == 0 && readerSwitch) {
-				readerSwitch = false;
-				pdPlayer.communicator.SendValue("UReaderSwitch", 0);
-			}
+				if (PDGainManager.soundNameVoice.Count > 0 && !readerSwitch) {
+					readerSwitch = true;
+					pdPlayer.communicator.SendValue("UReaderSwitch", 1);
+				}
+				else if (PDGainManager.soundNameVoice.Count == 0 && readerSwitch) {
+					readerSwitch = false;
+					pdPlayer.communicator.SendValue("UReaderSwitch", 0);
+				}
 			
-			if (pdPlayer.bridge.initialized && applicationFocused && !editorPaused) {
-				pdPlayer.communicator.WriteArray("UMasterReceive", dataSum);
-				LibPD.Process(pdPlayer.bridge.ticks, dataPtr, dataPtr);
+				if (pdPlayer.bridge.initialized && applicationFocused && !editorPaused) {
+					pdPlayer.communicator.WriteArray("UMasterReceive", dataSum);
+					LibPD.Process(pdPlayer.bridge.ticks, dataPtr, dataPtr);
+				}
 			}
 		}
 	}

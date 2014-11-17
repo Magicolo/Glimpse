@@ -27,17 +27,17 @@ namespace Magicolo.AudioTools {
 		}
 		
 		public virtual void Update() {
-			foreach (SingleAudioItem audioItem in activeSingleAudioItems.ToArray()) {
-				audioItem.Update();
+			for (int i = 0; i < activeSingleAudioItems.Count; i++) {
+				activeSingleAudioItems[i].Update();
 			}
-			foreach (MultipleAudioItem audioItem in activeMultipleAudioItems.ToArray()) {
-				audioItem.Update();
+			for (int i = 0; i < activeMultipleAudioItems.Count; i++) {
+				activeMultipleAudioItems[i].Update();
 			}
-			foreach (SingleAudioItem audioItem in inactiveSingleAudioItems.ToArray()) {
-				audioItem.Update();
+			for (int i = 0; i < inactiveSingleAudioItems.Count; i++) {
+				inactiveSingleAudioItems[i].Update();
 			}
-			foreach (MultipleAudioItem audioItem in inactiveMultipleAudioItems.ToArray()) {
-				audioItem.Update();
+			for (int i = 0; i < inactiveMultipleAudioItems.Count; i++) {
+				inactiveMultipleAudioItems[i].Update();
 			}
 		}
 		
@@ -71,8 +71,8 @@ namespace Magicolo.AudioTools {
 			inactiveSingleAudioItems.Remove(audioItem);
 			inactiveAudioObjects.Add(audioItem.gameObject);
 			audioItem.gameObject.transform.parent = player.transform;
+//			Object.Destroy(audioItem.gameObject);
 			audioItem.gameObject.SetActive(false);
-			audioItem.audioSource.clip = null;
 		}
 		
 		public virtual void Deactivate(MultipleAudioItem audioItem) {
@@ -104,7 +104,6 @@ namespace Magicolo.AudioTools {
 			SingleAudioItem audioItem = new SingleAudioItem(audioInfo.Name, idCounter, audioSource, audioInfo, coroutineHolder, gainManager, this, player);
 			
 			gainManager.Initialize(source, audioItem, player);
-			audioItem.Update();
 			inactiveSingleAudioItems.Add(audioItem);
 			return audioItem;
 		}
@@ -222,23 +221,25 @@ namespace Magicolo.AudioTools {
 			idCounter += 1;
 			MultipleAudioItem switchAudioItem = new MultipleAudioItem(container.Name, idCounter, this, player);
 			
-			string stateName = "";
+			int stateIndex = int.MinValue;
 			AudioSubContainer[] childrenSubContainers = container.IdsToSubContainers(childrenIds);
 			
 			if (childrenSubContainers[0].parentId == 0 && container.stateHolder != null && !string.IsNullOrEmpty(container.statePath)) {
-				stateName = "" + container.stateHolder.GetValueFromMember(container.statePath);
+				object stateValue = container.stateHolder.GetValueFromMember(container.statePath);
+				stateIndex = stateValue == null ? int.MinValue : stateValue.GetHashCode();
 			}
 			else {
 				AudioSubContainer parentSubContainer = container.GetSubContainerWithID(childrenSubContainers[0].parentId);
 				
 				if (parentSubContainer.stateHolder != null && !string.IsNullOrEmpty(parentSubContainer.statePath)) {
-					stateName = "" + parentSubContainer.stateHolder.GetValueFromMember(parentSubContainer.statePath);
+					object stateValue = parentSubContainer.stateHolder.GetValueFromMember(parentSubContainer.statePath);
+					stateIndex = stateValue == null ? int.MinValue : stateValue.GetHashCode();
 				}
 			}
 			
-			if (!string.IsNullOrEmpty(stateName)) {
+			if (stateIndex != int.MinValue) {
 				foreach (AudioSubContainer childSubContainer in childrenSubContainers) {
-					if (childSubContainer.stateName == stateName) {
+					if (childSubContainer.stateIndex == stateIndex) {
 						AudioItem childAudioItem = GetSubContainerAudioItem(container, childSubContainer, source);
 						if (childAudioItem != null) {
 							switchAudioItem.AddAudioItem(childAudioItem);
@@ -273,7 +274,7 @@ namespace Magicolo.AudioTools {
 		public virtual GameObject GetGameObject(object source) {
 			GameObject gameObject;
 			
-			gameObject = inactiveAudioObjects.Count == 0 ? new GameObject() : inactiveAudioObjects.Pop();
+			gameObject = inactiveAudioObjects.Count == 0 ? new GameObject() : inactiveAudioObjects.PopLast();
 			gameObject.transform.parent = player.transform;
 			gameObject.transform.Reset();
 			

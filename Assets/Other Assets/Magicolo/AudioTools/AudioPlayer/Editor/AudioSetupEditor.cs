@@ -42,8 +42,6 @@ namespace Magicolo.AudioTools {
 			ShowFadeOutCurve();
 			EditorGUILayout.PropertyField(audioInfoProperty.FindPropertyRelative("randomVolume"));
 			EditorGUILayout.PropertyField(audioInfoProperty.FindPropertyRelative("randomPitch"));
-			EditorGUILayout.PropertyField(audioInfoProperty.FindPropertyRelative("delay"));
-			EditorGUILayout.PropertyField(audioInfoProperty.FindPropertyRelative("syncMode"));
 			EditorGUILayout.PropertyField(audioInfoProperty.FindPropertyRelative("doNotKill"));
 			ShowClipInfo();
 			
